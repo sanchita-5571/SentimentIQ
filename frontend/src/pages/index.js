@@ -1,0 +1,6 @@
+export { default as DashboardPage } from './DashboardPage'
+export { default as LoginPage } from './LoginPage'
+export { default as ReportsPage } from './ReportsPage'
+export { default as RootCausePage } from './RootCausePage'
+export { default as TrendsPage } from './TrendsPage'
+export { default as VerbatimsPage } from './VerbatimsPage'

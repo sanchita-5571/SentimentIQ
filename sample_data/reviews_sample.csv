@@ -1,0 +1,13 @@
+id,author,title,content,rating,product,category,review_date,channel,region
+1001,Asha,Fast delivery,"Delivery was quick and the packaging felt premium. Setup was easy too.",5,AirLite Earbuds,Audio,2026-03-01,marketplace,IN
+1002,Rohan,Battery issue,"Battery dies after two hours and support keeps repeating the same script.",2,AirLite Earbuds,Audio,2026-03-03,direct,IN
+1003,Neha,Great value,"For the price this speaker sounds amazing and arrived on time.",5,SoundDock Mini,Audio,2026-03-05,marketplace,IN
+1004,Karan,Damage on arrival,"The box was crushed and the left earbud was already cracked when it arrived.",1,AirLite Earbuds,Audio,2026-03-06,direct,IN
+1005,Sana,Refund is slow,"Return pickup happened but the refund still has not been processed after nine days.",2,AirLite Earbuds,Audio,2026-03-08,marketplace,IN
+1006,Aman,Good after replacement,"Replacement unit works fine now but the first one had serious quality problems.",4,AirLite Earbuds,Audio,2026-03-10,direct,IN
+1007,Meera,Too expensive,"Sound is decent but the price feels high compared to other options.",3,SoundDock Mini,Audio,2026-03-12,marketplace,IN
+1008,Dev,App setup is confusing,"The setup app kept disconnecting and the instructions were not clear.",2,AirLite Earbuds,Audio,2026-03-13,direct,IN
+1009,Isha,Support fixed it,"Support finally solved the pairing issue in one call and followed up properly.",4,AirLite Earbuds,Audio,2026-03-15,direct,IN
+1010,Vikram,Delivery delay,"Shipping slipped twice and nobody updated the ETA until I complained.",1,AirLite Earbuds,Audio,2026-03-16,marketplace,IN
+1011,Priya,Packaging is nice,"Loved the packaging and unboxing experience. Product quality also feels solid.",5,SoundDock Mini,Audio,2026-03-18,direct,IN
+1012,Ritu,Defect again,"Second unit also has a faulty charging case. Quality control seems weak.",1,AirLite Earbuds,Audio,2026-03-20,marketplace,IN

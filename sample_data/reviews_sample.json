@@ -1,0 +1,74 @@
+[
+  {
+    "id": "j-2001",
+    "author": "Mina",
+    "title": "Late but okay",
+    "content": "Delivery arrived two days late and the courier left the box outside, but the product works well.",
+    "rating": 3,
+    "product": "AirLite Earbuds",
+    "category": "Audio",
+    "review_date": "2026-03-21",
+    "channel": "marketplace",
+    "region": "IN"
+  },
+  {
+    "id": "j-2002",
+    "author": "Omar",
+    "title": "Support loop",
+    "content": "Customer support kept asking me to restart the device instead of addressing the broken charging case.",
+    "rating": 1,
+    "product": "AirLite Earbuds",
+    "category": "Audio",
+    "review_date": "2026-03-22",
+    "channel": "direct",
+    "region": "IN"
+  },
+  {
+    "id": "j-2003",
+    "author": "Leena",
+    "title": "Worth it",
+    "content": "The speaker feels durable, packaging was clean, and the sound quality is much better than expected.",
+    "rating": 5,
+    "product": "SoundDock Mini",
+    "category": "Audio",
+    "review_date": "2026-03-23",
+    "channel": "marketplace",
+    "region": "IN"
+  },
+  {
+    "id": "j-2004",
+    "author": "Arjun",
+    "title": "Overpriced",
+    "content": "The product is fine but definitely too expensive for the battery life and build quality on offer.",
+    "rating": 2,
+    "product": "AirLite Earbuds",
+    "category": "Audio",
+    "review_date": "2026-03-24",
+    "channel": "direct",
+    "region": "IN"
+  },
+  {
+    "id": "j-2005",
+    "author": "Sara",
+    "title": "Setup friction",
+    "content": "The app setup failed three times and the instructions were confusing for first-time use.",
+    "rating": 2,
+    "product": "AirLite Earbuds",
+    "category": "Audio",
+    "review_date": "2026-03-25",
+    "channel": "marketplace",
+    "region": "IN"
+  },
+  {
+    "id": "j-2006",
+    "author": "Kabir",
+    "title": "Refund took forever",
+    "content": "The return was approved quickly but the refund process dragged on and support stopped replying.",
+    "rating": 1,
+    "product": "AirLite Earbuds",
+    "category": "Audio",
+    "review_date": "2026-03-26",
+    "channel": "direct",
+    "region": "IN"
+  }
+]
