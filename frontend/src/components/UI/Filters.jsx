@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Calendar, Filter, X, ChevronDown } from 'lucide-react'
+import { Filter, X, ChevronDown } from 'lucide-react'
 import clsx from 'clsx'
 
 export default function Filters({

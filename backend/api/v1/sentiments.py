@@ -4,6 +4,7 @@ SentimentIQ - Sentiments API (MongoDB version)
 
 import json
 from datetime import datetime
+from functools import lru_cache
 from typing import List, Optional
 
 from bson import ObjectId
@@ -17,8 +18,10 @@ from ml.sentiment import SentimentAnalyzer
 
 router = APIRouter()
 
-# Initialize sentiment analyzer
-sentiment_analyzer = SentimentAnalyzer()
+
+@lru_cache(maxsize=1)
+def get_sentiment_analyzer() -> SentimentAnalyzer:
+    return SentimentAnalyzer()
 
 
 @router.post("/analyze")
@@ -28,7 +31,7 @@ async def analyze_sentiment(
     return_emotions: bool = True,
 ):
     """Analyze sentiment of a single text"""
-    result = sentiment_analyzer.analyze(
+    result = get_sentiment_analyzer().analyze(
         text,
         return_aspects=return_aspects,
         return_emotions=return_emotions,
@@ -61,7 +64,7 @@ async def analyze_sentiment_bulk(
             continue
 
         # Analyze sentiment
-        analysis = sentiment_analyzer.analyze(
+        analysis = get_sentiment_analyzer().analyze(
             doc.get("content", ""),
             return_aspects=True,
             return_emotions=True,

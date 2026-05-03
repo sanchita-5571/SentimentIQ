@@ -1,0 +1,11 @@
+text,category,expected_urgency,expected_issue
+"Payment failed 3 times today. Urgent refund needed!",payment_issue,HIGH,payment_issue
+"My account is locked and I can't access anything. EMERGENCY!",login_issue,CRITICAL,login_issue
+"Package never arrived. Tracking shows delivered but it's not here. CRITICAL!",delivery_issue,CRITICAL,delivery_issue
+"System outage - all services down!",other,CRITICAL,other
+"Overcharged $500 by mistake. Need immediate credit.",payment_issue,HIGH,payment_issue
+"Cannot login after password reset. Urgent business impact.",login_issue,HIGH,login_issue
+"Multiple customers reporting same delivery delay.",delivery_issue,MEDIUM,delivery_issue
+"Just checking order status - no rush.",other,LOW,other
+"!!!! ALL CAPS CRISIS !!! DOWN DOWN DOWN",other,CRITICAL,other
+"Fraudulent charge on my card. Security breach!",payment_issue,CRITICAL,payment_issue

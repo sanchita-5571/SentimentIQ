@@ -20,22 +20,24 @@ export default function RootCauseCard({
   const getSeverityColor = (severity) => {
     switch (severity) {
       case 'critical':
-        return 'text-danger border-danger bg-danger/5'
+        return 'text-critical border-critical bg-critical/10'
       case 'high':
-        return 'text-warning border-warning bg-warning/5'
+        return 'text-negative border-negative bg-negative/10'
       case 'medium':
-        return 'text-info border-info bg-info/5'
+        return 'text-neutral border-neutral bg-neutral/10'
+      case 'low':
+        return 'text-info border-info bg-info/10'
       default:
-        return 'text-muted-foreground border-muted bg-muted/50'
+        return 'text-muted-foreground border-muted bg-muted/20'
     }
   }
 
   const getPriorityIcon = (priority) => {
     switch (priority) {
       case 'high':
-        return <AlertTriangle className="w-4 h-4 text-danger" />
+        return <AlertTriangle className="w-4 h-4 text-negative" />
       case 'medium':
-        return <TrendingDown className="w-4 h-4 text-warning" />
+        return <TrendingDown className="w-4 h-4 text-neutral" />
       default:
         return <GitBranch className="w-4 h-4 text-muted-foreground" />
     }

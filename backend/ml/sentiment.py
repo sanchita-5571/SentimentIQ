@@ -14,6 +14,8 @@ class SentimentAnalyzer:
     def __init__(self):
         self.vader_available = False
         self.transformer_available = False
+        self.transformer_attempted = False
+        self.transformer = None
         self.bertopic_available = False
         self.spacy_available = False
         
@@ -24,17 +26,6 @@ class SentimentAnalyzer:
             self.vader_available = True
         except ImportError:
             print("VADER not available, using fallback")
-        
-        # Try to import transformers
-        try:
-            from transformers import pipeline
-            self.transformer = pipeline(
-                "sentiment-analysis",
-                model="distilbert-base-uncased-finetuned-sst-2-english"
-            )
-            self.transformer_available = True
-        except ImportError:
-            print("Transformers not available, using fallback")
         
         # Try to import BERTopic
         try:
@@ -51,6 +42,23 @@ class SentimentAnalyzer:
         except:
             print("spaCy not available, aspect extraction disabled")
     
+    def _ensure_transformer(self):
+        if self.transformer_attempted:
+            return
+        self.transformer_attempted = True
+
+        try:
+            from transformers import pipeline
+
+            self.transformer = pipeline(
+                "sentiment-analysis",
+                model="distilbert-base-uncased-finetuned-sst-2-english"
+            )
+            self.transformer_available = True
+        except Exception:
+            self.transformer = None
+            self.transformer_available = False
+
     def analyze(
         self,
         text: str,
@@ -96,7 +104,8 @@ class SentimentAnalyzer:
             result["sentiment_confidence"] = abs(vader_compound)
         
         # Transformer analysis (override if available)
-        if self.transformer_available:
+        self._ensure_transformer()
+        if self.transformer_available and self.transformer is not None:
             try:
                 transformer_result = self.transformer(text[:512])[0]
                 label = transformer_result["label"].lower()
@@ -243,7 +252,8 @@ class TopicModeler:
             return []
         
         try:
-            # Simple topic modeling
+            if self.model is None:
+                self.model = self.BERTopic(verbose=False)
             topics, probs = self.model.fit_transform(texts)
             return [f"Topic {t}" for t in topics]
         except Exception as e:
@@ -256,6 +266,8 @@ class TopicModeler:
             return []
         
         try:
+            if self.model is None:
+                self.model = self.BERTopic(verbose=False)
             topics, probs = self.model.fit_transform(texts)
             
             # Get topic info

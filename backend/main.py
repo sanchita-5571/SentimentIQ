@@ -4,7 +4,7 @@ from datetime import datetime
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from api.v1 import auth, dashboard, meta, reports, reviews, root_cause
+from api.v1 import auth, dashboard, meta, reports, reviews, root_cause, settings as settings_api
 from core.config import settings
 from db.mongodb import close_mongodb, init_mongodb
 from db.redis_cache import close_redis, init_redis
@@ -43,6 +43,7 @@ app.include_router(reviews.router, prefix="/api/v1")
 app.include_router(dashboard.router, prefix="/api/v1")
 app.include_router(root_cause.router, prefix="/api/v1")
 app.include_router(reports.router, prefix="/api/v1")
+app.include_router(settings_api.router, prefix="/api/v1")
 
 
 @app.get("/")

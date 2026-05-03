@@ -3,7 +3,19 @@ import re
 from collections import Counter, defaultdict
 from functools import lru_cache
 
+import time
+from functools import wraps
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
+
+def timer_sync(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        start = time.perf_counter()
+        result = func(*args, **kwargs)
+        end = time.perf_counter()
+        print(f"[TIMING] {func.__name__} took {end - start:.2f}s")
+        return result
+    return wrapper
 
 from core.config import settings
 
@@ -48,9 +60,11 @@ def get_transformer_pipeline():
         return None
 
 
+@timer_sync
 def clean_text(text: str) -> str:
     text = re.sub(r"http\S+", " ", text)
-    text = re.sub(r"[^A-Za-z0-9\s'.,!?-]", " ", text)
+    # Preserve unicode letters so non-English reviews are not stripped to empty text
+    text = re.sub(r"[^\w\s'.,!?-]", " ", text, flags=re.UNICODE)
     text = re.sub(r"\s+", " ", text)
     return text.strip()
 
@@ -83,8 +97,10 @@ def _transformer_score(text: str) -> tuple[float, float] | None:
     return score, confidence
 
 
-def classify_sentiment(text: str, language: str) -> tuple[float, str, float]:
-    vader_score = get_vader().polarity_scores(text)["compound"]
+@timer_sync
+def classify_sentiment(text: str, language: str, vader_score: float | None = None) -> tuple[float, str, float]:
+    if vader_score is None:
+        vader_score = get_vader().polarity_scores(text)["compound"]
     transformer_result = _transformer_score(text) if language == "en" else None
 
     if transformer_result is not None:
@@ -104,19 +120,21 @@ def classify_sentiment(text: str, language: str) -> tuple[float, str, float]:
     return round(float(score), 4), label, round(float(min(confidence, 1.0)), 4)
 
 
-def extract_aspects(text: str) -> list[dict]:
+@timer_sync
+def extract_aspects(text: str, polarity_score: float | None = None) -> list[dict]:
     lower_text = text.lower()
     aspects = []
     analyzer = get_vader()
+    if polarity_score is None:
+        polarity_score = analyzer.polarity_scores(text)["compound"]
     for aspect, keywords in ASPECT_KEYWORDS.items():
         matched = [keyword for keyword in keywords if keyword in lower_text]
         if not matched:
             continue
-        aspect_score = analyzer.polarity_scores(text)["compound"]
         aspects.append(
             {
                 "aspect": aspect,
-                "score": round(float(aspect_score), 4),
+                "score": round(float(polarity_score), 4),
                 "mentions": len(matched),
                 "keywords": matched,
             }
@@ -125,7 +143,7 @@ def extract_aspects(text: str) -> list[dict]:
         aspects.append(
             {
                 "aspect": "general",
-                "score": round(float(analyzer.polarity_scores(text)["compound"]), 4),
+                "score": round(float(polarity_score), 4),
                 "mentions": 1,
                 "keywords": [],
             }
@@ -156,7 +174,7 @@ def extract_topics(texts: list[str]) -> list[list[str]]:
             topic for topic, keywords in TOPIC_KEYWORDS.items() if any(word in lower_text for word in keywords)
         ]
         if not matched_topics:
-            tokens = [token for token in re.findall(r"[a-zA-Z]{4,}", lower_text) if token not in {"this", "that", "with", "from", "have"}]
+            tokens = [token for token in re.findall(r"\w{4,}", lower_text, flags=re.UNICODE) if token not in {"this", "that", "with", "from", "have"}]
             common = Counter(tokens).most_common(2)
             matched_topics = [" ".join(word for word, _ in common)] if common else ["general feedback"]
         derived_topics.append(matched_topics[:2])

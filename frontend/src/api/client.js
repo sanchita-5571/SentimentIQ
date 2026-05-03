@@ -84,5 +84,10 @@ export const reportsApi = {
     }),
 }
 
+export const settingsApi = {
+  get: () => api.get('/settings'),
+  update: (payload) => api.put('/settings', payload),
+}
+
 export { getErrorMessage }
 export default api

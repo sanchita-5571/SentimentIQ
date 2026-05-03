@@ -2,19 +2,17 @@
 SentimentIQ - Settings API (MongoDB version)
 """
 
-import json
 from datetime import datetime
 from typing import Optional
 
-from bson import ObjectId
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException
 
 from api.v1.auth import get_current_active_user
-from core.security import PasswordHash
+from core.security import hash_password, verify_password
 from db.mongodb import get_mongodb
-from db.postgres import SETTINGS_COLLECTION, USERS_COLLECTION
+from db.postgres import SETTINGS_COLLECTION
 
-router = APIRouter()
+router = APIRouter(prefix="/settings", tags=["settings"])
 
 
 @router.get("/")
@@ -102,30 +100,19 @@ async def update_account_settings(
     current_user=Depends(get_current_active_user),
 ):
     """Update account settings"""
-    db = get_mongodb()
-    if db is None:
-        raise HTTPException(status_code=500, detail="Database not connected")
-
-    update_data = {"updated_at": datetime.utcnow()}
-
     if email:
-        # Check email not taken
-        existing = await db[USERS_COLLECTION].find_one({"email": email, "_id": {"$ne": ObjectId(current_user.id)}})
-        if existing:
-            raise HTTPException(status_code=400, detail="Email already in use")
-        update_data["email"] = email
-
+        current_user.email = email
     if full_name is not None:
-        update_data["full_name"] = full_name
-
-    if new_password and current_password:
-        if not PasswordHash.verify_password(current_password, current_user.hashed_password):
+        current_user.full_name = full_name
+    if new_password:
+        if not current_password:
+            raise HTTPException(status_code=400, detail="Current password is required")
+        if current_user.hashed_password and not verify_password(current_password, current_user.hashed_password):
             raise HTTPException(status_code=400, detail="Current password is incorrect")
-        update_data["hashed_password"] = PasswordHash.hash_password(new_password)
+        current_user.hashed_password = hash_password(new_password)
 
-    await db[USERS_COLLECTION].update_one(
-        {"_id": ObjectId(current_user.id)},
-        {"$set": update_data}
-    )
-
-    return {"message": "Account settings updated"}
+    return {
+        "message": "Account settings updated locally",
+        "email": current_user.email,
+        "full_name": current_user.full_name,
+    }

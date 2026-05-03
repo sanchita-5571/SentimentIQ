@@ -5,11 +5,29 @@ import { dashboardApi, getErrorMessage, reportsApi, reviewsApi, rootCauseApi } f
 const serializeFilters = (filters) =>
   Object.fromEntries(Object.entries(filters).filter(([, value]) => value !== '' && value !== null))
 
+const deriveAlertsFromRootCauses = (events) =>
+  (events || []).map((event) => ({
+    id: event.id,
+    title: event.earliest_degrading_aspect
+      ? `${event.earliest_degrading_aspect} sentiment drop detected`
+      : 'Sentiment drop detected',
+    message: `Sentiment changed by ${event.sentiment_delta?.toFixed?.(2) ?? event.sentiment_delta} across ${event.review_volume ?? 0} reviews.`,
+    severity:
+      event.sentiment_delta <= -0.35
+        ? 'high'
+        : event.sentiment_delta <= -0.2
+          ? 'medium'
+          : 'low',
+    timestamp: event.event_date || event.created_at,
+    source: event.amplification_chain?.[0] || event.earliest_degrading_aspect || 'Root cause engine',
+  }))
+
 export const useDataStore = create((set, get) => ({
   snapshot: null,
   reviews: [],
   reviewMeta: { total: 0, page: 1, page_size: 20 },
   rootCauses: [],
+  alerts: [],
   loading: {
     snapshot: false,
     reviews: false,
@@ -52,6 +70,7 @@ export const useDataStore = create((set, get) => ({
       const response = await rootCauseApi.list()
       set((state) => ({
         rootCauses: response.data,
+        alerts: deriveAlertsFromRootCauses(response.data),
         loading: { ...state.loading, rootCauses: false },
       }))
     } catch (error) {

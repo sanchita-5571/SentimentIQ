@@ -26,6 +26,15 @@ export const useAuthStore = create(
         set({ isAuthenticated: true, user: DUMMY_USER })
       },
       clearError: () => set({ error: null }),
+      resetAuth: () => {
+        set({ 
+          user: DUMMY_USER,
+          token: 'dummy-token', 
+          isAuthenticated: true,
+          loading: false,
+          error: null 
+        })
+      },
     }),
     {
       name: 'auth-storage',

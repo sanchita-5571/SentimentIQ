@@ -2,9 +2,61 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  font-family: "Space Grotesk", "Trebuchet MS", "Segoe UI", sans-serif;
-  color-scheme: dark;
+@layer base {
+  :root {
+    /* Light mode */
+    --background: 210 20% 98%;
+    --foreground: 222.2 47% 11%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 47% 11%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 47% 11%;
+    --primary: 215 85% 58%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 210 20% 92%;
+    --muted-foreground: 217.5 28.5% 38%;
+    --accent: 210 20% 98%;
+    --accent-foreground: 222.2 47% 11%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 220 25% 91%;
+    --input: 220 25% 91%;
+    --ring: 215 85% 58%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    /* Dark mode */
+    --background: 222 84% 5%;
+    --foreground: 210 40% 98%;
+    --card: 222 47% 11%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222 47% 11%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 213 84% 57%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 217 33% 18%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 218 28% 18%;
+    --muted-foreground: 215 20% 72%;
+    --accent: 218 28% 16%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217 24% 22%;
+    --input: 217 24% 22%;
+    --ring: 213 84% 57%;
+    --radius: 0.5rem;
+  }
+
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
 }
 
 * {
@@ -14,7 +66,6 @@
 body {
   margin: 0;
   min-width: 320px;
-  background: #020617;
 }
 
 button,
@@ -30,6 +81,6 @@ textarea {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.35);
+  background: hsl(var(--muted));
   border-radius: 999px;
 }

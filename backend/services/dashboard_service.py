@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Optional
 
 from db.mongodb import get_mongodb
@@ -6,7 +6,30 @@ from db.postgres import REVIEWS_COLLECTION
 from db.redis_cache import cache_get, cache_set
 from db.sql_models import IngestionBatchRecord
 from db.sqlite import SessionLocal
+import time
+from functools import wraps
+
 from services.nlp_service import aspect_rollup, topic_rollup
+
+def timer(func):
+    @wraps(func)
+    async def wrapper(*args, **kwargs):
+        start = time.perf_counter()
+        result = await func(*args, **kwargs)
+        end = time.perf_counter()
+        print(f"[TIMING] {func.__name__} took {end - start:.2f}s")
+        return result
+    return wrapper
+
+def timer_sync(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        start = time.perf_counter()
+        result = func(*args, **kwargs)
+        end = time.perf_counter()
+        print(f"[TIMING] {func.__name__} took {end - start:.2f}s")
+        return result
+    return wrapper
 
 
 def build_filter_query(
@@ -21,6 +44,10 @@ def build_filter_query(
     end_date: Optional[datetime] = None,
 ) -> dict:
     query = {"user_id": user_id}
+    normalized_end_date = end_date
+    # Expand date-only end filters so dashboard snapshots match the full selected day.
+    if normalized_end_date and normalized_end_date.time() == datetime.min.time():
+        normalized_end_date = normalized_end_date + timedelta(days=1) - timedelta(microseconds=1)
 
     if search:
         query["$or"] = [
@@ -43,8 +70,8 @@ def build_filter_query(
         query["review_date"] = {}
         if start_date:
             query["review_date"]["$gte"] = start_date
-        if end_date:
-            query["review_date"]["$lte"] = end_date
+        if normalized_end_date:
+            query["review_date"]["$lte"] = normalized_end_date
     return query
 
 
@@ -73,6 +100,7 @@ def _aspect_trends(reviews: list[dict]) -> list[dict]:
     return sorted(combined, key=lambda item: (item["delta"], item["average_score"], -item["mention_count"]))[:8]
 
 
+@timer
 async def get_dashboard_snapshot(
     user_id: str,
     filters: dict,

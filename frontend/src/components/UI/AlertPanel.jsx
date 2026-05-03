@@ -68,7 +68,7 @@ export default function AlertPanel({
         <Info className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
         <h3 className="text-lg font-medium mb-2">No Active Alerts</h3>
         <p className="text-muted-foreground">
-          All systems are running smoothly. You'll see alerts here when issues are detected.
+          All systems are running smoothly. You&apos;ll see alerts here when issues are detected.
         </p>
       </div>
     )

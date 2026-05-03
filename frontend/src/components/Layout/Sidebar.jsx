@@ -1,43 +1,54 @@
 import { NavLink } from 'react-router-dom'
-import { Activity, BarChart3, Download, GitBranchPlus, MessageSquareQuote } from 'lucide-react'
-
-const items = [
-  { to: '/', label: 'Overview', icon: Activity },
-  { to: '/trends', label: 'Trend Analytics', icon: BarChart3 },
-  { to: '/root-causes', label: 'Root Cause', icon: GitBranchPlus },
-  { to: '/verbatims', label: 'Verbatims', icon: MessageSquareQuote },
-  { to: '/reports', label: 'Exports', icon: Download },
-]
+import { useUIStore } from '../../stores/uiStore'
+import { cn } from '../../lib/utils'
+import { Home, BarChart3, FileText, Settings, AlertTriangle, SearchCheck, FileBarChart2 } from 'lucide-react'
 
 export default function Sidebar() {
+  const sidebarOpen = useUIStore((state) => state.sidebarOpen)
+  const mobileMenuOpen = useUIStore((state) => state.mobileMenuOpen)
+  const setSidebarOpen = useUIStore((state) => state.setSidebarOpen)
+  const setMobileMenuOpen = useUIStore((state) => state.setMobileMenuOpen)
+
+  const navItems = [
+    { to: '/', icon: Home, label: 'Dashboard' },
+    { to: '/reviews-explorer', icon: FileText, label: 'Reviews' },
+    { to: '/sentiment-trends', icon: BarChart3, label: 'Trends' },
+    { to: '/root-cause-analysis', icon: SearchCheck, label: 'Root Cause' },
+    { to: '/reports', icon: FileBarChart2, label: 'Reports' },
+    { to: '/alerts', icon: AlertTriangle, label: 'Alerts' },
+    { to: '/settings', icon: Settings, label: 'Settings' },
+  ]
+
   return (
-    <aside className="hidden w-72 flex-col border-r border-white/10 bg-slate-950/70 p-6 backdrop-blur xl:flex">
-      <div className="mb-10">
-        <p className="text-xs uppercase tracking-[0.35em] text-cyan-300">SentimentIQ</p>
-        <h1 className="mt-3 text-3xl font-semibold tracking-tight text-white">Review intelligence</h1>
-        <p className="mt-3 text-sm text-slate-300">
-          Trace the earliest aspect drift, quantify the amplification chain, and ship fixes faster.
-        </p>
-      </div>
-      <nav className="space-y-2">
-        {items.map(({ to, label, icon: Icon }) => (
+    <aside className={cn(
+      'fixed inset-y-16 left-0 z-30 w-64 border-r border-border bg-background transition-transform duration-200 ease-in-out lg:static lg:inset-auto lg:block lg:h-auto lg:translate-x-0 lg:shrink-0',
+      /* Use the mobile-specific toggle so the hamburger button actually opens the sidebar on small screens. */
+      mobileMenuOpen || sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+    )}>
+      <div className="h-full overflow-y-auto lg:sticky lg:top-0">
+      <nav className="flex flex-col gap-2 p-4">
+        {navItems.map(({ to, icon: Icon, label }) => (
           <NavLink
             key={to}
             to={to}
-            end={to === '/'}
-            className={({ isActive }) =>
-              `flex items-center gap-3 rounded-2xl px-4 py-3 text-sm transition ${
-                isActive
-                  ? 'bg-cyan-400/15 text-cyan-200 shadow-[0_0_0_1px_rgba(34,211,238,0.2)]'
-                  : 'text-slate-300 hover:bg-white/5 hover:text-white'
-              }`
-            }
+            onClick={() => {
+              // Close the mobile drawer after navigation instead of flipping it back open on desktop clicks.
+              setMobileMenuOpen(false)
+              setSidebarOpen(true)
+            }}
+            className={({ isActive }) => cn(
+              'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+              isActive
+                ? 'bg-primary text-primary-foreground'
+                : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+            )}
           >
             <Icon className="h-4 w-4" />
             {label}
           </NavLink>
         ))}
       </nav>
+      </div>
     </aside>
   )
 }

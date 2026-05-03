@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Optional
 
 from bson import ObjectId
@@ -50,6 +50,11 @@ def build_filter_query(
 ) -> dict:
     """Build MongoDB filter query"""
     query = {"user_id": user_id}
+    normalized_end_date = end_date
+    # Treat date-only end filters as inclusive so selecting a day includes the full day's reviews.
+    if normalized_end_date and normalized_end_date.time() == datetime.min.time():
+        normalized_end_date = normalized_end_date + timedelta(days=1) - timedelta(microseconds=1)
+
     if search:
         query["$or"] = [
             {"content": {"$regex": search, "$options": "i"}},
@@ -71,8 +76,8 @@ def build_filter_query(
         query["review_date"] = {}
         if start_date:
             query["review_date"]["$gte"] = start_date
-        if end_date:
-            query["review_date"]["$lte"] = end_date
+        if normalized_end_date:
+            query["review_date"]["$lte"] = normalized_end_date
     return query
 
 
@@ -132,7 +137,7 @@ async def upload_csv_reviews(
 ) -> dict:
     if not file.filename.lower().endswith(".csv"):
         raise HTTPException(status_code=400, detail="Only CSV files are supported here")
-    rows = parse_csv_bytes(await file.read())
+    rows = await parse_csv_bytes(await file.read())
     reviews = [normalize_review_row(row, "csv") for row in rows]
     return await ingest_reviews(current_user.id, reviews, "csv")
 

@@ -48,7 +48,9 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        success: {
+        positive: {
+          DEFAULT: '#16A34A',
+          fg: 'hsl(var(--foreground))',
           50: '#f0fdf4',
           100: '#dcfce7',
           200: '#bbf7d0',
@@ -60,7 +62,13 @@ export default {
           800: '#166534',
           900: '#14532d',
         },
-        warning: {
+        success: {
+          DEFAULT: '#16A34A',
+          foreground: '#ffffff',
+        },
+        neutral: {
+          DEFAULT: '#F59E0B',
+          fg: 'hsl(var(--foreground))',
           50: '#fffbeb',
           100: '#fef3c7',
           200: '#fde68a',
@@ -72,7 +80,13 @@ export default {
           800: '#92400e',
           900: '#78350f',
         },
-        danger: {
+        warning: {
+          DEFAULT: '#F59E0B',
+          foreground: '#111827',
+        },
+        negative: {
+          DEFAULT: '#DC2626',
+          fg: 'hsl(var(--foreground))',
           50: '#fef2f2',
           100: '#fee2e2',
           200: '#fecaca',
@@ -84,7 +98,41 @@ export default {
           800: '#991b1b',
           900: '#7f1d1d',
         },
+        danger: {
+          DEFAULT: '#DC2626',
+          foreground: '#ffffff',
+        },
+        critical: {
+          DEFAULT: '#991B1B',
+          fg: 'hsl(var(--foreground))',
+          50: '#fef2f2',
+          100: '#fee2e2',
+          200: '#fecaca',
+          300: '#fca5a5',
+          400: '#f87171',
+          500: '#ef4444',
+          600: '#dc2626',
+          700: '#b91c1c',
+          800: '#991b1b',
+          900: '#7f1d1d',
+        },
+        'root-cause': {
+          DEFAULT: '#7C3AED',
+          fg: 'hsl(var(--foreground))',
+          50: '#f9f5ff',
+          100: '#ede9fe',
+          200: '#ddd6fe',
+          300: '#c4b5fd',
+          400: '#a78bfa',
+          500: '#8b5cf6',
+          600: '#7c3aed',
+          700: '#6d28d9',
+          800: '#5b21b6',
+          900: '#4c1d95',
+        },
         info: {
+          DEFAULT: '#0EA5E9',
+          fg: 'hsl(var(--foreground))',
           50: '#eff6ff',
           100: '#dbeafe',
           200: '#bfdbfe',

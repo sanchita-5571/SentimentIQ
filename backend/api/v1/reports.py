@@ -5,7 +5,7 @@ SentimentIQ - Reports API (MongoDB version)
 import csv
 import io
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -24,16 +24,29 @@ router = APIRouter(prefix="/reports", tags=["reports"])
 
 def build_filter_query(
     user_id: str,
+    search: Optional[str] = None,
     source: Optional[str] = None,
     product: Optional[str] = None,
     category: Optional[str] = None,
     sentiment_label: Optional[str] = None,
+    language: Optional[str] = None,
     start_date: Optional[datetime] = None,
     end_date: Optional[datetime] = None,
 ) -> dict:
     """Build MongoDB filter query"""
     query = {"user_id": user_id}
+    normalized_end_date = end_date
+    # Normalize date-only exports to include the selected day's full range instead of stopping at midnight.
+    if normalized_end_date and normalized_end_date.time() == datetime.min.time():
+        normalized_end_date = normalized_end_date + timedelta(days=1) - timedelta(microseconds=1)
 
+    if search:
+        query["$or"] = [
+            {"content": {"$regex": search, "$options": "i"}},
+            {"title": {"$regex": search, "$options": "i"}},
+            {"topics": {"$regex": search, "$options": "i"}},
+            {"aspect_sentiments.aspect": {"$regex": search, "$options": "i"}},
+        ]
     if source:
         query["source"] = source
     if product:
@@ -42,12 +55,14 @@ def build_filter_query(
         query["category"] = category
     if sentiment_label:
         query["sentiment_label"] = sentiment_label
+    if language:
+        query["language"] = language
     if start_date or end_date:
         query["review_date"] = {}
         if start_date:
             query["review_date"]["$gte"] = start_date
-        if end_date:
-            query["review_date"]["$lte"] = end_date
+        if normalized_end_date:
+            query["review_date"]["$lte"] = normalized_end_date
 
     return query
 
@@ -65,10 +80,12 @@ async def export_report(
 
     query = build_filter_query(
         user_id=current_user.id,
+        search=payload.search,
         source=payload.source,
         product=payload.product,
         category=payload.category,
         sentiment_label=payload.sentiment_label,
+        language=payload.language,
         start_date=payload.start_date,
         end_date=payload.end_date,
     )
