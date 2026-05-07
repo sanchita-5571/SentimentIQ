@@ -15,6 +15,7 @@ export default function ReviewsExplorerPage() {
   const error = useDataStore((state) => state.error)
   const fetchReviews = useDataStore((state) => state.fetchReviews)
   const fetchSnapshot = useDataStore((state) => state.fetchSnapshot)
+  const currentBatchId = useDataStore((state) => state.currentBatchId)
   const [page, setPage] = useState(1)
 
   useEffect(() => {
@@ -23,11 +24,11 @@ export default function ReviewsExplorerPage() {
 
   useEffect(() => {
     fetchSnapshot(filters)
-  }, [fetchSnapshot, filters])
+  }, [fetchSnapshot, filters, currentBatchId])
 
   useEffect(() => {
     fetchReviews(filters, page)
-  }, [fetchReviews, filters, page])
+  }, [fetchReviews, filters, page, currentBatchId])
 
   return (
     <div className="space-y-6">

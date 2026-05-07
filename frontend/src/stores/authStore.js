@@ -11,27 +11,32 @@ export const useAuthStore = create(
   persist(
     (set) => ({
       user: DUMMY_USER,
-      token: 'dummy-token',
-      isAuthenticated: true,
+      token: null,
+      isAuthenticated: false,
       loading: false,
       error: null,
-      login: async () => {
-
-        set({ isAuthenticated: true, user: DUMMY_USER })
+      login: async ({ email } = {}) => {
+        // In this app, auth is handled via API calls in pages.
+        // This method exists to keep a consistent store API.
+        if (email) {
+          set({ user: { ...DUMMY_USER, email } })
+        }
         return true
       },
       logout: () => {
-
-        set({ isAuthenticated: true, user: DUMMY_USER })
+        set({ isAuthenticated: false, token: null })
+      },
+      setAuth: ({ token, user, isAuthenticated = true } = {}) => {
+        set({ token, user: user || DUMMY_USER, isAuthenticated })
       },
       clearError: () => set({ error: null }),
       resetAuth: () => {
-        set({ 
+        set({
           user: DUMMY_USER,
-          token: 'dummy-token', 
-          isAuthenticated: true,
+          token: null,
+          isAuthenticated: false,
           loading: false,
-          error: null 
+          error: null,
         })
       },
     }),
@@ -45,3 +50,4 @@ export const useAuthStore = create(
     },
   ),
 )
+

@@ -33,21 +33,25 @@ export default function KPICard({
 
   return (
     <div className={clsx(
-      'bg-card rounded-lg border border-border p-6 transition-all hover:shadow-md',
+      'glass-panel rounded-[28px] border border-white/10 p-6 transition-all hover:-translate-y-1 hover:border-primary/20 hover:shadow-2xl',
       className
     )}>
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          {Icon && <Icon className="w-8 h-8 text-primary" />}
+          {Icon && (
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,hsl(var(--primary)/0.18),hsl(var(--secondary)/0.18))] ring-1 ring-white/10">
+              <Icon className="h-6 w-6 text-primary" />
+            </div>
+          )}
           <div>
-            <p className="text-sm font-medium text-muted-foreground">{title}</p>
-            <p className="text-2xl font-bold">{value}</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">{title}</p>
+            <p className="mt-2 text-3xl font-bold">{value}</p>
           </div>
         </div>
       </div>
 
       {change !== undefined && (
-        <div className="flex items-center gap-1 mt-4">
+        <div className="mt-5 flex items-center gap-1 text-sm">
           {getChangeIcon()}
           <span className={clsx('text-sm font-medium', getChangeColor())}>
             {changeType === 'positive' && '+'}

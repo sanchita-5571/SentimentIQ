@@ -1,31 +1,29 @@
 import { useEffect, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+
 import { useFilterStore } from '../../stores/filterStore'
 import { useDataStore } from '../../stores/dataStore'
 import { useUIStore } from '../../stores/uiStore'
 import { useStoreReset } from '../../utils/storeReset'
-import { Bell, Search, Sun, Moon, User, Menu, ChevronDown } from 'lucide-react'
+import { Bell, Sun, Moon, User, Menu, ChevronDown } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
+import MascotIcon from '../UI/MascotIcon'
 
 export default function Navbar() {
   const [profileOpen, setProfileOpen] = useState(false)
   const [notifOpen, setNotifOpen] = useState(false)
   const profileRef = useRef(null)
   const notifRef = useRef(null)
-  const navigate = useNavigate()
+
   const resetStores = useStoreReset()
-  
+  const alerts = useDataStore((state) => state.alerts)
+  const archiveCurrentDashboard = useDataStore((state) => state.archiveCurrentDashboard)
+  const clearDashboardState = useDataStore((state) => state.clearDashboardState)
+
   const { darkMode, toggleDarkMode, toggleMobileMenu } = useUIStore()
   const filters = useFilterStore((state) => state.filters)
-  const setFilter = useFilterStore((state) => state.setFilter)
   const resetFilters = useFilterStore((state) => state.resetFilters)
-  const alerts = useDataStore((state) => state.alerts)
   const activeFilterCount = Object.values(filters).filter(Boolean).length
 
-  const handleSearch = (e) => {
-    const query = e.target.value
-    setFilter('search', query)
-  }
 
   useEffect(() => {
 
@@ -54,64 +52,47 @@ export default function Navbar() {
   }, [])
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border/70 bg-background/95 backdrop-blur-xl supports-[backdrop-filter:blur(20px)]:bg-background/80">
-      <div className="flex h-16 items-center gap-4 px-4 sm:px-6 xl:px-8">
+    <header className="sticky top-0 z-40 border-b border-white/10 bg-background/75 backdrop-blur-2xl supports-[backdrop-filter:blur(20px)]:bg-background/60">
+      <div className="flex min-h-20 items-center gap-4 px-4 sm:px-6 xl:px-8">
         <div className="flex min-w-0 items-center gap-4 lg:gap-6">
-          {}
           <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-gradient-to-r from-primary to-secondary p-1.5">
-              <SentimentIQLogo className="h-6 w-6 text-primary-foreground" />
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,hsl(var(--primary)/0.18),hsl(var(--secondary)/0.32))] p-1.5 ring-1 ring-white/10 shadow-lg shadow-slate-950/15">
+              <MascotIcon className="h-6 w-6" />
             </div>
+
             <div>
-              <h1 className="text-xl font-bold tracking-tight lg:block hidden">SentimentIQ</h1>
-              <p className="text-xs uppercase tracking-wide text-muted-foreground hidden lg:block">Live Dashboard</p>
+              <h1 className="hidden text-xl font-bold tracking-tight lg:block">SentimentIQ</h1>
+              <p className="hidden text-[11px] uppercase tracking-[0.32em] text-primary/75 lg:block">Signal Studio</p>
             </div>
           </div>
 
-          {}
-          <div className="hidden lg:block lg:w-72 xl:w-[26rem]">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <input
-                type="text"
-                placeholder="Search reviews, alerts..."
-                value={filters.search}
-                onChange={handleSearch}
-                className="w-full rounded-xl border border-input bg-background px-10 py-2.5 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              />
-            </div>
-          </div>
-
-          {}
           <button
             type="button"
             onClick={toggleMobileMenu}
-            className="rounded-lg p-2 hover:bg-accent lg:hidden"
+            className="rounded-xl border border-white/10 bg-white/5 p-2 hover:bg-accent lg:hidden"
             aria-label="Open navigation menu"
           >
             <Menu className="h-5 w-5" />
           </button>
         </div>
 
-        {}
+
         <div className="ml-auto flex shrink-0 items-center gap-2 lg:gap-3">
-          {}
           {activeFilterCount > 0 && (
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              className="hidden md:block rounded-full bg-destructive/10 px-3 py-1.5 text-xs font-medium text-destructive"
+              className="hidden rounded-full border border-white/10 bg-destructive/10 px-3 py-1.5 text-xs font-medium text-destructive md:block"
             >
               {activeFilterCount} filters
             </motion.div>
           )}
 
-          {}
           <div ref={notifRef} className="relative">
             <button
               type="button"
               onClick={() => setNotifOpen(!notifOpen)}
-              className="relative p-2 rounded-lg hover:bg-accent focus:outline-none focus:ring-2 focus:ring-ring"
+              className="relative rounded-xl border border-white/10 bg-white/5 p-2 hover:bg-accent focus:outline-none focus:ring-2 focus:ring-ring"
               aria-label="Toggle notifications"
               aria-expanded={notifOpen}
             >
@@ -128,15 +109,15 @@ export default function Navbar() {
                   initial={{ opacity: 0, scale: 0.95, y: -8 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95, y: -8 }}
-                  className="absolute right-0 top-full mt-2 w-80 bg-background border border-border rounded-xl shadow-2xl z-50"
+                  className="glass-panel absolute right-0 top-full z-50 mt-3 w-80 rounded-3xl border border-white/10 shadow-2xl"
                 >
-                  <div className="p-4 border-b border-border rounded-t-xl">
+                  <div className="rounded-t-3xl border-b border-white/10 p-4">
                     <h3 className="font-semibold text-foreground">Notifications</h3>
                   </div>
                   <div className="max-h-96 overflow-y-auto">
                     {alerts.length ? (
                       alerts.slice(0, 4).map((alert) => (
-                        <div key={alert.id} className="p-4 border-b border-border hover:bg-accent">
+                        <div key={alert.id} className="border-b border-white/5 p-4 hover:bg-white/5">
                           <p className="text-sm font-medium">{alert.title}</p>
                           <p className="text-xs text-muted-foreground mt-1">
                             {alert.timestamp ? new Date(alert.timestamp).toLocaleString() : 'Unknown time'}
@@ -154,28 +135,30 @@ export default function Navbar() {
             </AnimatePresence>
           </div>
 
-          {}
           <button
             type="button"
             onClick={toggleDarkMode}
-            className="p-2 rounded-lg hover:bg-accent data-[state=checked]:bg-accent"
+            className="rounded-xl border border-white/10 bg-white/5 p-2 hover:bg-accent data-[state=checked]:bg-accent"
             title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
           >
             {darkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
           </button>
 
-          {}
           <div ref={profileRef} className="relative">
             <button
               type="button"
               onClick={() => setProfileOpen(!profileOpen)}
-              className="flex items-center gap-2 rounded-xl border border-border bg-card px-3 py-2 hover:bg-accent focus:outline-none focus:ring-2 focus:ring-ring"
+              className="flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-3 py-2 hover:bg-accent focus:outline-none focus:ring-2 focus:ring-ring"
               aria-expanded={profileOpen}
             >
-              <div className="h-8 w-8 rounded-full bg-gradient-to-r from-primary to-secondary flex items-center justify-center">
-                <User className="h-4 w-4 text-primary-foreground" />
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[linear-gradient(135deg,hsl(var(--primary)),hsl(var(--secondary)))] text-slate-950">
+                <User className="h-4 w-4" />
               </div>
-              <span className="hidden sm:block text-sm font-medium">Admin</span>
+              <div className="hidden text-left sm:block">
+                <span className="block text-sm font-medium">SentimentIQ</span>
+                <span className="block text-[11px] uppercase tracking-[0.25em] text-muted-foreground">Workspace</span>
+              </div>
+
               <ChevronDown className="h-4 w-4" />
             </button>
             <AnimatePresence>
@@ -184,39 +167,33 @@ export default function Navbar() {
                   initial={{ opacity: 0, scale: 0.95, y: -8 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95, y: -8 }}
-                  className="absolute right-0 top-full mt-2 w-48 bg-background border border-border rounded-xl shadow-2xl z-50 py-1"
+                  className="glass-panel absolute right-0 top-full z-50 mt-3 w-52 rounded-3xl border border-white/10 py-2 shadow-2xl"
                 >
-                  <div className="px-4 py-2 text-sm text-muted-foreground border-b border-border">
-                    Admin User
+                  <div className="border-b border-white/10 px-4 py-2 text-sm text-muted-foreground">
+                    Workspace
                   </div>
-                  {}
                   <button
                     type="button"
                     onClick={() => {
                       setProfileOpen(false)
                       resetFilters()
                     }}
-                    className="w-full px-4 py-2 text-sm text-left hover:bg-accent rounded-none"
+                    className="w-full px-4 py-2 text-left text-sm hover:bg-white/5"
                   >
                     Clear filters
                   </button>
+
                   <button
                     type="button"
-                    onClick={() => {
+                    onClick={async () => {
                       setProfileOpen(false)
-                      navigate('/settings')
-                    }}
-                    className="w-full px-4 py-2 text-sm text-left hover:bg-accent rounded-none"
-                  >
-                    Settings
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setProfileOpen(false)
+
+                      await archiveCurrentDashboard(useFilterStore.getState().filters)
+                      clearDashboardState()
                       resetStores()
                     }}
-                    className="w-full px-4 py-2 text-sm text-left hover:bg-accent rounded-none border-t border-border"
+
+                    className="w-full border-t border-white/10 px-4 py-2 text-left text-sm hover:bg-white/5"
                   >
                     Reset app
                   </button>
@@ -230,10 +207,3 @@ export default function Navbar() {
   )
 }
 
-function SentimentIQLogo({ className }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="currentColor">
-      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-    </svg>
-  )
-}

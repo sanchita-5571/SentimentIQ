@@ -1,11 +1,10 @@
 import axios from 'axios'
-import { useAuthStore } from '../stores/authStore'
-
 const api = axios.create({
   baseURL: '/api/v1',
 })
 
 function getErrorMessage(error) {
+
   const detail = error?.response?.data?.detail
 
   if (typeof detail === 'string') {
@@ -31,14 +30,7 @@ function getErrorMessage(error) {
   return error?.message || 'An unexpected error occurred'
 }
 
-api.interceptors.request.use((config) => {
-  const { token } = useAuthStore.getState()
-  config.headers = config.headers || {}
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`
-  }
-  return config
-})
+
 
 api.interceptors.response.use(
   (response) => response,
@@ -47,15 +39,17 @@ api.interceptors.response.use(
   },
 )
 
-export const authApi = {
-  login: (payload) => api.post('/auth/login', payload),
-  register: (payload) => api.post('/auth/register', payload),
-  me: () => api.get('/auth/me'),
-}
+
 
 export const dashboardApi = {
   snapshot: (params) => api.get('/dashboard/snapshot', { params }),
 }
+
+export const dashboardHistoryApi = {
+  store: (payload) => api.post('/dashboard/history/store', payload),
+  list: (params) => api.get('/dashboard/history/list', { params }),
+}
+
 
 export const reviewsApi = {
   list: (params) => api.get('/reviews', { params }),
@@ -77,7 +71,7 @@ export const reviewsApi = {
 }
 
 export const rootCauseApi = {
-  list: () => api.get('/root-causes'),
+  list: (params) => api.get('/root-causes', { params }),
   rebuild: () => api.post('/root-causes/rebuild'),
 }
 
@@ -95,3 +89,6 @@ export const settingsApi = {
 
 export { getErrorMessage }
 export default api
+
+
+

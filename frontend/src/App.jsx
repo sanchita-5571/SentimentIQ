@@ -11,6 +11,7 @@ const ReviewsExplorerPage = lazy(() => import('./pages/ReviewsExplorerPage'))
 const ReportsPage = lazy(() => import('./pages/ReportsPage'))
 const AlertsPage = lazy(() => import('./pages/AlertsPage'))
 const SettingsPage = lazy(() => import('./pages/SettingsPage'))
+
 const SentimentTrendsPage = lazy(() => import('./pages/SentimentTrendsPage'))
 const HistoryPage = lazy(() => import('./pages/HistoryPage'))
 

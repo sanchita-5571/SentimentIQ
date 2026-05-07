@@ -17,16 +17,16 @@ export default function FilterBar({ options = {} }) {
   ]
 
   return (
-    <div className="grid w-full gap-3 rounded-[28px] border bg-card/80 p-4 backdrop-blur-sm md:grid-cols-2 2xl:grid-cols-4">
+    <div className="glass-panel grid w-full gap-3 rounded-[30px] border border-white/10 p-4 shadow-xl shadow-slate-950/10 backdrop-blur-sm md:grid-cols-2 2xl:grid-cols-4">
       {inputs.map((input) => (
         <label key={input.key} htmlFor={`filter-${input.key}`} className="space-y-2 text-sm text-muted-foreground">
-          <span>{input.label}</span>
+          <span className="pl-1 text-[11px] font-semibold uppercase tracking-[0.24em]">{input.label}</span>
           {input.type === 'select' ? (
             <select
               id={`filter-${input.key}`}
               value={filters[input.key] || ''}
               onChange={(event) => setFilter(input.key, event.target.value)}
-              className="w-full rounded-2xl border border-input bg-card/50 px-4 py-3 text-foreground ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-foreground ring-offset-background transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               <option value="">All</option>
               {input.options.map((option) => (
@@ -41,7 +41,7 @@ export default function FilterBar({ options = {} }) {
               type={input.type}
               value={filters[input.key] || ''}
               onChange={(event) => setFilter(input.key, event.target.value)}
-              className="w-full rounded-2xl border border-input bg-card/50 px-4 py-3 text-foreground ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-foreground ring-offset-background transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               placeholder={input.type === 'text' ? 'Review content, topic, aspect...' : ''}
             />
           )}
@@ -50,7 +50,7 @@ export default function FilterBar({ options = {} }) {
       <button
         type="button"
         onClick={resetFilters}
-        className="rounded-2xl border border-input bg-muted/50 hover:bg-muted px-4 py-3 text-sm font-medium text-muted-foreground transition hover:text-foreground"
+        className="rounded-2xl border border-white/10 bg-[linear-gradient(135deg,hsl(var(--primary)/0.18),hsl(var(--secondary)/0.16))] px-4 py-3 text-sm font-semibold text-foreground transition hover:brightness-110"
       >
         Reset filters
       </button>

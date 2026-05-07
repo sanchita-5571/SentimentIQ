@@ -8,12 +8,17 @@ export function Card({
   return (
     <section
       className={cn(
-        'rounded-3xl border bg-card text-card-foreground shadow-xl animate-fade-in',
+        'glass-panel hero-glow rounded-[32px] border border-white/10 text-card-foreground shadow-xl animate-fade-in',
+        'relative overflow-hidden',
+        'before:absolute before:inset-0 before:pointer-events-none before:opacity-100',
+        'before:bg-[radial-gradient(520px_circle_at_top_left,hsl(var(--ring)/0.14),transparent_35%)]',
+        'after:absolute after:inset-x-8 after:top-0 after:h-px after:bg-white/10 after:content-[""]',
+        'transition-[box-shadow,transform,border-color] duration-300 hover:-translate-y-1 hover:border-white/20',
         className
       )}
       {...props}
     >
-      {children}
+      <div className="relative z-10">{children}</div>
     </section>
   )
 }

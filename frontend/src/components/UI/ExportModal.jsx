@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Download, FileText, FileSpreadsheet, X } from 'lucide-react'
+import { Download, FileText, X } from 'lucide-react'
 import clsx from 'clsx'
 
 export default function ExportModal({
@@ -7,22 +7,15 @@ export default function ExportModal({
   onClose,
   onExport,
   title = 'Export Data',
-  className = ''
+  className = '',
 }) {
-  const [exportFormat, setExportFormat] = useState('pdf')
-  const [dateRange, setDateRange] = useState('last_30_days')
-  const [includeCharts, setIncludeCharts] = useState(true)
-  const [includeRawData, setIncludeRawData] = useState(false)
   const [isExporting, setIsExporting] = useState(false)
 
   const handleExport = async () => {
     setIsExporting(true)
     try {
       await onExport({
-        format: exportFormat,
-        dateRange,
-        includeCharts,
-        includeRawData
+        format: 'pdf',
       })
       onClose()
     } catch (error) {
@@ -36,131 +29,59 @@ export default function ExportModal({
 
   return (
     <>
-      {}
-      <div
-        className="fixed inset-0 bg-black/50 z-50"
-        onClick={onClose}
-      />
+      <div className="fixed inset-0 bg-black/50 z-50" onClick={onClose} />
 
-      {}
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div className={clsx(
-          'bg-card rounded-lg border border-border shadow-xl max-w-md w-full',
-          className
-        )}>
-          {}
+        <div
+          className={clsx(
+            'bg-card rounded-lg border border-border shadow-xl max-w-sm w-full max-h-[90vh] overflow-y-auto',
+            className,
+          )}
+        >
           <div className="flex items-center justify-between p-6 border-b border-border">
             <h2 className="text-lg font-semibold">{title}</h2>
-            <button
-              onClick={onClose}
-              className="p-1 rounded hover:bg-muted"
-            >
+            <button onClick={onClose} className="p-1 rounded hover:bg-muted" type="button">
               <X className="w-5 h-5" />
             </button>
           </div>
 
-          {}
-          <div className="p-6 space-y-6">
-            {}
-            <div>
-              <label className="block text-sm font-medium mb-3">Export Format</label>
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  onClick={() => setExportFormat('pdf')}
-                  className={clsx(
-                    'flex items-center gap-3 p-3 rounded-lg border transition-colors',
-                    exportFormat === 'pdf'
-                      ? 'border-primary bg-primary/5'
-                      : 'border-border hover:bg-muted'
-                  )}
-                >
-                  <FileText className="w-5 h-5" />
-                  <span className="text-sm font-medium">PDF Report</span>
-                </button>
-                <button
-                  onClick={() => setExportFormat('excel')}
-                  className={clsx(
-                    'flex items-center gap-3 p-3 rounded-lg border transition-colors',
-                    exportFormat === 'excel'
-                      ? 'border-primary bg-primary/5'
-                      : 'border-border hover:bg-muted'
-                  )}
-                >
-                  <FileSpreadsheet className="w-5 h-5" />
-                  <span className="text-sm font-medium">Excel Data</span>
-                </button>
-              </div>
-            </div>
-
-            {}
-            <div>
-              <label className="block text-sm font-medium mb-3">Date Range</label>
-              <select
-                value={dateRange}
-                onChange={(e) => setDateRange(e.target.value)}
-                className="w-full px-3 py-2 rounded border border-border bg-background"
+          <div className="p-6 space-y-4">
+            <div className="grid grid-cols-1 gap-3">
+              <button
+                type="button"
+                onClick={() => handleExport()}
+                disabled={isExporting}
+                className={clsx(
+                  'flex items-center justify-center gap-2 p-3 rounded-lg border transition-colors',
+                  'border-border hover:bg-muted',
+                  'disabled:opacity-50'
+                )}
               >
-                <option value="last_7_days">Last 7 days</option>
-                <option value="last_30_days">Last 30 days</option>
-                <option value="last_90_days">Last 90 days</option>
-                <option value="last_year">Last year</option>
-                <option value="all_time">All time</option>
-              </select>
+                <FileText className="w-5 h-5" />
+                <span className="text-sm font-medium">PDF Analysis Report</span>
+              </button>
             </div>
 
-            {}
-            <div className="space-y-3">
-              <label className="flex items-center gap-3">
-                <input
-                  type="checkbox"
-                  checked={includeCharts}
-                  onChange={(e) => setIncludeCharts(e.target.checked)}
-                  className="rounded border-border"
-                />
-                <span className="text-sm">Include charts and visualizations</span>
-              </label>
+            <p className="text-sm text-muted-foreground">
+              The PDF includes dashboard analysis summaries such as sentiment trend data, aspect issues, alerts,
+              and root-cause findings. Raw review rows are not included.
+            </p>
 
-              <label className="flex items-center gap-3">
-                <input
-                  type="checkbox"
-                  checked={includeRawData}
-                  onChange={(e) => setIncludeRawData(e.target.checked)}
-                  className="rounded border-border"
-                />
-                <span className="text-sm">Include raw data tables</span>
-              </label>
-            </div>
-          </div>
-
-          {}
-          <div className="flex justify-end gap-3 p-6 border-t border-border">
-            <button
-              onClick={onClose}
-              className="px-4 py-2 text-sm rounded hover:bg-muted"
-              disabled={isExporting}
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleExport}
-              disabled={isExporting}
-              className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90 disabled:opacity-50"
-            >
+            <div className="flex items-center justify-center text-sm text-muted-foreground min-h-[1.5rem]">
               {isExporting ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
-                  <span>Exporting...</span>
-                </>
-              ) : (
-                <>
+                <span className="flex items-center gap-2">
+                  <span className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
+                  Download started...
                   <Download className="w-4 h-4" />
-                  <span>Export</span>
-                </>
+                </span>
+              ) : (
+                <span>&nbsp;</span>
               )}
-            </button>
+            </div>
           </div>
         </div>
       </div>
     </>
   )
 }
+

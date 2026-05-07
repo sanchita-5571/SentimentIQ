@@ -17,8 +17,11 @@ export default function Layout() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      {}
-      <div className="fixed inset-0 pointer-events-none bg-gradient-to-br from-primary/5 via-background to-muted/20" />
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,hsl(var(--primary)/0.16),transparent_26%),radial-gradient(circle_at_78%_12%,hsl(var(--secondary)/0.14),transparent_20%),linear-gradient(180deg,hsl(var(--background)),hsl(var(--background)))]" />
+        <div className="absolute inset-0 bg-sentiment-grid opacity-[0.08]" />
+        <div className="absolute inset-0 bg-sentiment-noise opacity-[0.18]" />
+      </div>
 
       <div className="relative flex min-h-screen flex-col">
         <Navbar />
@@ -35,7 +38,6 @@ export default function Layout() {
               transition={{ duration: 0.3 }}
               className="relative flex-1 overflow-y-auto p-4 sm:p-6 xl:p-8"
             >
-              {}
               <Suspense
                 fallback={
                   <div className="mx-auto flex max-w-7xl flex-col gap-6">
@@ -50,15 +52,18 @@ export default function Layout() {
             </motion.main>
           </div>
 
-          <aside className="hidden w-80 shrink-0 border-l border-border/50 bg-background/80 backdrop-blur-xl 2xl:block">
+          <aside className="hidden w-80 shrink-0 border-l border-white/10 bg-background/40 backdrop-blur-2xl 2xl:block">
             <div className="sticky top-0 p-6">
+              <p className="mb-2 text-xs font-semibold uppercase tracking-[0.28em] text-primary/80">Live Feed</p>
               <h3 className="mb-4 text-lg font-semibold">Recent Activity</h3>
               <div className="space-y-3 text-sm">
-                {}
                 {recentActivity.length ? (
                   recentActivity.map((alert) => (
-                    <div key={alert.id} className="flex items-center gap-3 rounded-xl bg-muted p-3 hover:bg-accent">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+                    <div
+                      key={alert.id}
+                      className="glass-panel flex items-center gap-3 rounded-2xl border border-white/10 p-3 hover:border-primary/30"
+                    >
+                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 ring-1 ring-primary/20">
                         <Bell className="h-5 w-5 text-primary" />
                       </div>
                       <div className="min-w-0">
@@ -70,7 +75,7 @@ export default function Layout() {
                     </div>
                   ))
                 ) : (
-                  <div className="rounded-xl border border-dashed border-border p-4 text-muted-foreground">
+                  <div className="rounded-2xl border border-dashed border-white/10 p-4 text-muted-foreground">
                     Recent alerts and root-cause activity will appear here as the dataset changes.
                   </div>
                 )}
@@ -80,10 +85,9 @@ export default function Layout() {
         </div>
       </div>
 
-      {}
       {mobileMenuOpen && (
         <div 
-          className="fixed inset-0 z-40 lg:hidden"
+          className="fixed inset-0 z-40 bg-slate-950/30 backdrop-blur-sm lg:hidden"
           onClick={toggleMobileMenu}
         />
       )}

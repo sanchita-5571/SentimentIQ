@@ -23,8 +23,19 @@ export default function DashboardPage() {
   const loading = useDataStore((state) => state.loading)
   const fetchSnapshot = useDataStore((state) => state.fetchSnapshot)
   const fetchRootCauses = useDataStore((state) => state.fetchRootCauses)
+  const currentBatchId = useDataStore((state) => state.currentBatchId)
+  const dashboardCleared = useDataStore((state) => state.dashboardCleared)
+  const selectBatch = useDataStore((state) => state.selectBatch)
   const refreshInterval = useUIStore((state) => state.refreshInterval)
   const [dismissedAlertIds, setDismissedAlertIds] = useState([])
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search)
+    const batchId = urlParams.get('batch_id')
+    if (batchId && batchId !== currentBatchId) {
+      selectBatch(batchId)
+    }
+  }, [selectBatch, currentBatchId])
 
   useEffect(() => {
     fetchSnapshot(filters)
@@ -32,11 +43,11 @@ export default function DashboardPage() {
     const safeInterval = Math.max(Number(refreshInterval) || 15, 5) * 1000
     const interval = window.setInterval(() => fetchSnapshot(filters), safeInterval)
     return () => window.clearInterval(interval)
-  }, [fetchSnapshot, filters, refreshInterval])
+  }, [fetchSnapshot, filters, refreshInterval, currentBatchId])
 
   useEffect(() => {
     fetchRootCauses()
-  }, [fetchRootCauses])
+  }, [fetchRootCauses, currentBatchId])
 
   const issueData = useMemo(
     () =>
@@ -65,19 +76,70 @@ export default function DashboardPage() {
     [alerts, dismissedAlertIds],
   )
 
+  const overview = snapshot?.overview
+  const totalReviews = overview?.total_reviews?.toLocaleString?.() || '0'
+  const negativeRatio = Math.round((overview?.negative_ratio || 0) * 100)
+  const averageSentiment = Number(overview?.average_sentiment || 0).toFixed(2)
+
   return (
     <div className="space-y-8 max-w-7xl mx-auto">
+      <Card className="overflow-hidden p-8 lg:p-10">
+        <div className="grid gap-8 lg:grid-cols-[1.45fr_0.8fr] lg:items-end">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.32em] text-primary/80">Realtime Intelligence</p>
+            <h2 className="mt-4 max-w-3xl text-4xl font-bold leading-tight lg:text-5xl">
+              A sharper cockpit for tracking customer sentiment before it becomes churn.
+            </h2>
+            <p className="mt-4 max-w-2xl text-base text-muted-foreground lg:text-lg">
+              Monitor review velocity, uncover rising issues, and isolate the signals that need action without digging through raw exports.
+            </p>
+            <div className="mt-8 flex flex-wrap gap-3 text-sm">
+              <Badge className="border-white/10 bg-white/5 px-4 py-2 text-foreground">
+                {dashboardCleared ? 'Dashboard cleared' : 'Live feed active'}
+              </Badge>
+              <Badge className="border-white/10 bg-primary/10 px-4 py-2 text-primary">{totalReviews} reviews indexed</Badge>
+              <Badge className="border-white/10 bg-secondary/15 px-4 py-2 text-foreground">{negativeRatio}% negative share</Badge>
+            </div>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-1">
+            <div className="rounded-[28px] border border-white/10 bg-white/5 p-5">
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">Avg Sentiment</p>
+              <p className="mt-3 text-3xl font-bold">{averageSentiment}</p>
+            </div>
+            <div className="rounded-[28px] border border-white/10 bg-white/5 p-5">
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">Root Causes</p>
+              <p className="mt-3 text-3xl font-bold">{rootCauses.length}</p>
+            </div>
+            <div className="rounded-[28px] border border-white/10 bg-white/5 p-5">
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">Open Alerts</p>
+              <p className="mt-3 text-3xl font-bold">{visibleAlerts.length}</p>
+            </div>
+          </div>
+        </div>
+      </Card>
+
       <div className="flex flex-col lg:flex-row gap-6 lg:items-center">
         <FilterBar options={snapshot?.filter_options} />
         <UploadPanel />
       </div>
+
+      {dashboardCleared && !currentBatchId && !loading.snapshot && (
+        <Card className="p-8 text-center">
+          <h3 className="text-xl font-semibold">Dashboard is cleared</h3>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Upload a new CSV or JSON file to start a fresh analysis, or open a previous batch from History.
+          </p>
+        </Card>
+      )}
 
       <StatGrid overview={snapshot?.overview} loading={loading.snapshot} />
 
       <div className="grid gap-8 lg:grid-cols-2">
         <Card className="p-8">
           <div className="mb-6">
-            <h2 className="text-2xl font-bold">Sentiment and Volume Trend</h2>
+            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-primary/80">Pulse</p>
+            <h2 className="mt-2 text-2xl font-bold">Sentiment and Volume Trend</h2>
             <p className="text-muted-foreground">Daily average sentiment with review volume overlay</p>
           </div>
           <div className="h-96">
@@ -86,7 +148,7 @@ export default function DashboardPage() {
             ) : (
               <ResponsiveContainer width="100%" height="100%">
                 <ComposedChart data={snapshot?.timeline || []}>
-                  <CartesianGrid vertical={false} stroke="hsl(var(--muted)/0.2)" />
+                  <CartesianGrid vertical={false} stroke="hsl(var(--muted-foreground)/0.12)" />
                   <XAxis dataKey="date" axisLine={false} tickLine={false} tickMargin={8} />
                   <YAxis yAxisId="left" axisLine={false} tickLine={false} tickMargin={8} />
                   <YAxis yAxisId="right" orientation="right" axisLine={false} tickLine={false} tickMargin={8} />
@@ -125,7 +187,8 @@ export default function DashboardPage() {
 
         <Card className="p-8">
           <div className="mb-6">
-            <h2 className="text-2xl font-bold mb-2">Aspect Distribution</h2>
+            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-primary/80">Coverage</p>
+            <h2 className="mb-2 mt-2 text-2xl font-bold">Aspect Distribution</h2>
             <p className="text-muted-foreground">Top mentioned aspects from the current filtered dataset</p>
           </div>
           <SourcePieChart data={aspectDistribution} loading={loading.snapshot} />
@@ -135,7 +198,8 @@ export default function DashboardPage() {
       <Card className="p-8">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h2 className="text-2xl font-bold">Top Issues</h2>
+            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-primary/80">Friction Map</p>
+            <h2 className="mt-2 text-2xl font-bold">Top Issues</h2>
             <p className="text-muted-foreground">Aspect trends with the strongest signal in the current review set</p>
           </div>
         </div>
@@ -165,10 +229,11 @@ export default function DashboardPage() {
         <Card className="p-8">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="text-2xl font-bold">Recent Alerts</h2>
+              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-primary/80">Attention</p>
+              <h2 className="mt-2 text-2xl font-bold">Recent Alerts</h2>
               <p className="text-muted-foreground">Notifications derived from root-cause events</p>
             </div>
-            <Badge variant="secondary">Live</Badge>
+            <Badge variant="secondary" className="border-white/10 bg-white/5 uppercase">Live</Badge>
           </div>
           <div className="space-y-4">
               <AnimatePresence>
@@ -199,7 +264,8 @@ export default function DashboardPage() {
 
         <Card className="p-8">
           <div className="mb-6">
-            <h2 className="text-2xl font-bold">Root Causes</h2>
+            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-primary/80">Diagnosis</p>
+            <h2 className="mt-2 text-2xl font-bold">Root Causes</h2>
             <p className="text-muted-foreground">Recent sentiment drop events</p>
           </div>
           <div className="space-y-4">
@@ -209,7 +275,7 @@ export default function DashboardPage() {
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: index * 0.1 }}
-                className="p-5 bg-muted/50 rounded-xl border border-border/50 hover:bg-muted"
+                className="rounded-[28px] border border-white/10 bg-white/5 p-5 hover:bg-white/[0.07]"
               >
                 <div className="flex items-center gap-3 mb-2">
                   <div className="h-2 w-2 rounded-full bg-destructive" />

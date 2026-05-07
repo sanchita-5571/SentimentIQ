@@ -1,64 +1,71 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Card, SectionTitle } from '../components/UI/Card'
 import { useDataStore } from '../stores/dataStore'
 import { useFilterStore } from '../stores/filterStore'
+import ExportModal from '../components/UI/ExportModal'
 
 export default function ReportsPage() {
   const filters = useFilterStore((state) => state.filters)
   const snapshot = useDataStore((state) => state.snapshot)
   const fetchSnapshot = useDataStore((state) => state.fetchSnapshot)
+  const fetchRootCauses = useDataStore((state) => state.fetchRootCauses)
   const exportReport = useDataStore((state) => state.exportReport)
   const exporting = useDataStore((state) => state.loading.export)
-  const [format, setFormat] = useState('csv')
+
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false)
 
   useEffect(() => {
     fetchSnapshot(filters)
-  }, [fetchSnapshot, filters])
+    fetchRootCauses()
+  }, [fetchSnapshot, fetchRootCauses, filters])
+
+  const basePayload = useMemo(() => {
+    return {
+      search: filters.search || null,
+      start_date: filters.start_date || null,
+      end_date: filters.end_date || null,
+      source: filters.source || null,
+      sentiment_label: filters.sentiment_label || null,
+      language: filters.language || null,
+      product: filters.product || null,
+      category: filters.category || null,
+    }
+  }, [filters])
 
   return (
     <div className="space-y-6">
       <Card>
         <SectionTitle
           eyebrow="Report export"
-          title="Export filtered review intelligence"
-          body="Generate CSV, JSON, or Markdown report outputs from the live filtered dataset without leaving the local stack."
+          title="Export dashboard analysis as PDF"
+          body="Generate a PDF summary of the current dashboard analysis, including trend summaries, issues, alerts, and root-cause findings."
         />
-        <div className="mt-6 flex flex-wrap gap-3">
-          {['csv', 'json', 'markdown'].map((option) => (
-            <button
-              key={option}
-              type="button"
-              onClick={() => setFormat(option)}
-              className={`rounded-full border px-4 py-2 text-sm transition ${
-                format === option
-                  ? 'border-primary bg-primary text-primary-foreground'
-                  : 'border-border bg-muted/50 text-foreground hover:bg-muted'
-              }`}
-            >
-              {option.toUpperCase()}
-            </button>
-          ))}
+
+        <div className="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div className="text-sm text-muted-foreground">
+            Current filters are applied to the PDF export.
+          </div>
+          <button
+            type="button"
+            disabled={exporting}
+            onClick={() => setIsExportModalOpen(true)}
+            className="rounded-2xl bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90 disabled:opacity-50"
+          >
+            {exporting ? 'Preparing PDF...' : 'Export PDF report'}
+          </button>
         </div>
-        <button
-          type="button"
-          disabled={exporting}
-          onClick={() =>
-            exportReport({
-              format,
-              search: filters.search || null,
-              start_date: filters.start_date || null,
-              end_date: filters.end_date || null,
-              source: filters.source || null,
-              sentiment_label: filters.sentiment_label || null,
-              language: filters.language || null,
-              product: filters.product || null,
-              category: filters.category || null,
+
+        <ExportModal
+          isOpen={isExportModalOpen}
+          onClose={() => setIsExportModalOpen(false)}
+          title="Export PDF report"
+          onExport={async () => {
+            return exportReport({
+              title: 'SentimentIQ Dashboard Analysis Report',
+              filters: basePayload,
             })
-          }
-          className="mt-6 rounded-2xl bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
-        >
-          {exporting ? 'Preparing export...' : 'Download report'}
-        </button>
+          }}
+        />
       </Card>
 
       <Card>

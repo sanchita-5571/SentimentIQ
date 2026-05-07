@@ -106,7 +106,7 @@ async def get_dashboard_snapshot(
     user_id: str,
     filters: dict,
 ) -> dict:
-    cache_key = "dashboard:{user_id}:{source}:{product}:{category}:{sentiment}:{language}:{search}:{start}:{end}".format(
+    cache_key = "dashboard:{user_id}:{source}:{product}:{category}:{sentiment}:{language}:{search}:{start}:{end}:{batch_id}".format(
         user_id=user_id,
         source=filters.get("source") or "all",
         product=filters.get("product") or "all",
