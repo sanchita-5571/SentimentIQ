@@ -1,7 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
-// Dummy user for local-only access (no authentication required)
 const DUMMY_USER = {
   id: 'local-user',
   email: 'local@localhost',
@@ -17,12 +16,12 @@ export const useAuthStore = create(
       loading: false,
       error: null,
       login: async () => {
-        // No-op - always authenticated
+
         set({ isAuthenticated: true, user: DUMMY_USER })
         return true
       },
       logout: () => {
-        // No-op - stay authenticated
+
         set({ isAuthenticated: true, user: DUMMY_USER })
       },
       clearError: () => set({ error: null }),

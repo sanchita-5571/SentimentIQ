@@ -8,16 +8,16 @@ import json
 from datetime import datetime, timedelta
 from typing import Optional
 
+from schemas.report import ReportExportRequest
+
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import StreamingResponse
-from sqlalchemy.orm import Session
 
 from api.v1.auth import get_current_user
 from db.mongodb import get_mongodb
 from db.postgres import REVIEWS_COLLECTION
-from db.sql_models import ReportExportRecord
-from db.sqlite import get_db_session
-from schemas.report import ReportExportRequest
+from db.postgres import insert_one
+REPORT_EXPORTS_COLLECTION = "report_exports"
 
 router = APIRouter(prefix="/reports", tags=["reports"])
 
@@ -36,7 +36,7 @@ def build_filter_query(
     """Build MongoDB filter query"""
     query = {"user_id": user_id}
     normalized_end_date = end_date
-    # Normalize date-only exports to include the selected day's full range instead of stopping at midnight.
+
     if normalized_end_date and normalized_end_date.time() == datetime.min.time():
         normalized_end_date = normalized_end_date + timedelta(days=1) - timedelta(microseconds=1)
 
@@ -71,7 +71,6 @@ def build_filter_query(
 async def export_report(
     payload: ReportExportRequest,
     current_user=Depends(get_current_user),
-    session: Session = Depends(get_db_session),
 ):
     """Export report in various formats"""
     db = get_mongodb()
@@ -90,11 +89,9 @@ async def export_report(
         end_date=payload.end_date,
     )
 
-    # Get reviews
     cursor = db[REVIEWS_COLLECTION].find(query).sort("review_date", -1)
     reviews = await cursor.to_list(length=10000)
 
-    # Get overview stats
     total_reviews = len(reviews)
     total_sentiment = sum(r.get("sentiment_score", 0) for r in reviews)
     negative_count = sum(1 for r in reviews if r.get("sentiment_label") == "negative")
@@ -109,15 +106,13 @@ async def export_report(
 
     export_format = payload.format
 
-    session.add(
-        ReportExportRecord(
-            user_id=current_user.id,
-            export_format=export_format,
-            filters_json=payload.model_dump_json(),
-            created_at=datetime.utcnow(),
-        )
-    )
-    session.commit()
+    export_record = {
+        "user_id": current_user.id,
+        "export_format": export_format,
+        "filters_json": payload.model_dump_json(),
+        "created_at": datetime.utcnow(),
+    }
+    await insert_one(REPORT_EXPORTS_COLLECTION, export_record)
 
     if export_format == "json":
         export_payload = {

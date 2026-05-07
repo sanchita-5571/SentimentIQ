@@ -22,7 +22,7 @@ class SentimentService:
             return None
 
         try:
-            # Sentiments are stored in reviews collection
+
             return await db[REVIEWS_COLLECTION].find_one({"_id": ObjectId(sentiment_id)})
         except Exception:
             return None
@@ -49,7 +49,6 @@ class SentimentService:
         if db is None:
             raise RuntimeError("MongoDB not connected")
 
-        # Update the review with sentiment data
         sentiment_data["updated_at"] = datetime.utcnow()
 
         await db[REVIEWS_COLLECTION].update_one(
@@ -79,7 +78,6 @@ class SentimentService:
         negative = await db[REVIEWS_COLLECTION].count_documents({**query, "sentiment_label": "negative"})
         neutral = await db[REVIEWS_COLLECTION].count_documents({**query, "sentiment_label": "neutral"})
 
-        # Calculate average sentiment
         cursor = db[REVIEWS_COLLECTION].find(query)
         reviews = await cursor.to_list(length=10000)
         avg_sentiment = sum(r.get("sentiment_score", 0) for r in reviews) / total if total > 0 else 0.0

@@ -34,7 +34,6 @@ class ReviewTopic(BaseModel):
     topic_id = Column(Integer, ForeignKey("topics.id"), nullable=False, index=True)
     probability = Column(Float, nullable=True)  # Probability of this topic for this review
 
-    # Relationships
     review = relationship("Review", back_populates="review_topics", lazy="selectin")
     topic = relationship("Topic", back_populates="reviews", lazy="selectin")
 

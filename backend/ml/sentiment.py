@@ -18,23 +18,20 @@ class SentimentAnalyzer:
         self.transformer = None
         self.bertopic_available = False
         self.spacy_available = False
-        
-        # Try to import VADER
+
         try:
             from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
             self.vader = SentimentIntensityAnalyzer()
             self.vader_available = True
         except ImportError:
             print("VADER not available, using fallback")
-        
-        # Try to import BERTopic
+
         try:
             from bertopic import BERTopic
             self.bertopic_available = True
         except ImportError:
             print("BERTopic not available")
-        
-        # Try to import spaCy
+
         try:
             import spacy
             self.nlp = spacy.load("en_core_web_sm")
@@ -80,8 +77,7 @@ class SentimentAnalyzer:
         
         if not text or not text.strip():
             return result
-        
-        # VADER analysis
+
         if self.vader_available:
             vader_scores = self.vader.polarity_scores(text)
             result["vader"] = {
@@ -90,7 +86,7 @@ class SentimentAnalyzer:
                 "neutral": vader_scores["neu"],
                 "compound": vader_scores["compound"],
             }
-            # Use compound score
+
             vader_compound = vader_scores["compound"]
             if vader_compound >= 0.05:
                 result["sentiment_score"] = vader_compound
@@ -102,8 +98,7 @@ class SentimentAnalyzer:
                 result["sentiment_score"] = 0.0
                 result["sentiment_label"] = "neutral"
             result["sentiment_confidence"] = abs(vader_compound)
-        
-        # Transformer analysis (override if available)
+
         self._ensure_transformer()
         if self.transformer_available and self.transformer is not None:
             try:
@@ -115,8 +110,7 @@ class SentimentAnalyzer:
                     "label": label,
                     "score": score,
                 }
-                
-                # Use transformer if more confident
+
                 if score > result["sentiment_confidence"]:
                     result["sentiment_label"] = label
                     result["sentiment_confidence"] = score
@@ -126,12 +120,10 @@ class SentimentAnalyzer:
                         result["sentiment_score"] = -score
             except Exception as e:
                 print(f"Transformer error: {e}")
-        
-        # Aspect extraction
+
         if return_aspects and self.spacy_available:
             result["aspects"] = self.extract_aspects(text)
-        
-        # Emotion classification (simple rule-based)
+
         if return_emotions:
             result["emotions"] = self.classify_emotions(text)
         
@@ -145,13 +137,11 @@ class SentimentAnalyzer:
             return aspects
         
         doc = self.nlp(text)
-        
-        # Extract noun chunks as potential aspects
+
         for chunk in doc.noun_chunks:
-            # Simple sentiment for the aspect
+
             aspect_text = chunk.text.lower()
-            
-            # Check for opinion words nearby
+
             sentiment_words = {
                 "positive": ["good", "great", "excellent", "amazing", "love", "best"],
                 "negative": ["bad", "poor", "terrible", "worst", "hate", "awful"],
@@ -186,48 +176,40 @@ class SentimentAnalyzer:
             "surprise": 0.0,
             "disgust": 0.0,
         }
-        
-        # Joy indicators
+
         joy_words = ["happy", "love", "great", "excellent", "amazing", "wonderful", "fantastic", "joy"]
         for word in joy_words:
             if word in text_lower:
                 emotions["joy"] += 0.2
-        
-        # Anger indicators
+
         anger_words = ["angry", "hate", "furious", "annoyed", "irritated", "mad"]
         for word in anger_words:
             if word in text_lower:
                 emotions["anger"] += 0.2
-        
-        # Sadness indicators
+
         sadness_words = ["sad", "disappointed", "unhappy", "upset", "depressed", "broken"]
         for word in sadness_words:
             if word in text_lower:
                 emotions["sadness"] += 0.2
-        
-        # Fear indicators
+
         fear_words = ["scared", "afraid", "worried", "nervous", "fear", "terrified"]
         for word in fear_words:
             if word in text_lower:
                 emotions["fear"] += 0.2
-        
-        # Surprise indicators
+
         surprise_words = ["surprised", "shocked", "amazing", "incredible", "unexpected"]
         for word in surprise_words:
             if word in text_lower:
                 emotions["surprise"] += 0.2
-        
-        # Disgust indicators
+
         disgust_words = ["disgusting", "gross", "nasty", "sick", "repulsive"]
         for word in disgust_words:
             if word in text_lower:
                 emotions["disgust"] += 0.2
-        
-        # Normalize to 0-1 range
+
         for emotion in emotions:
             emotions[emotion] = min(1.0, emotions[emotion])
-        
-        # Convert to list
+
         return [{"emotion": k, "score": v} for k, v in emotions.items() if v > 0]
 
 
@@ -269,8 +251,7 @@ class TopicModeler:
             if self.model is None:
                 self.model = self.BERTopic(verbose=False)
             topics, probs = self.model.fit_transform(texts)
-            
-            # Get topic info
+
             topic_info = self.model.get_topic_info()
             
             return [

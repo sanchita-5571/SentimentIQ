@@ -39,7 +39,7 @@ export default function AlertCard({ alert, onResolve = () => {}, onIgnore = () =
             <span>{alert.source}</span>
           </div>
         </div>
-        {/* Keep alert actions visible on touch devices so resolve/ignore controls are not hover-only. */}
+        {}
         <div className="flex flex-wrap gap-2 sm:ml-4 sm:opacity-0 sm:transition-opacity sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
           <Button type="button" variant="outline" size="sm" onClick={() => onResolve(alert.id)}>
             Resolve

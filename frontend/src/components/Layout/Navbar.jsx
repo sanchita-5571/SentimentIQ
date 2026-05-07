@@ -28,7 +28,7 @@ export default function Navbar() {
   }
 
   useEffect(() => {
-    // Close open popovers when focus shifts elsewhere so keyboard and mouse users are not trapped in stale menus.
+
     const handlePointerDown = (event) => {
       if (profileRef.current && !profileRef.current.contains(event.target)) {
         setProfileOpen(false)
@@ -57,7 +57,7 @@ export default function Navbar() {
     <header className="sticky top-0 z-40 border-b border-border/70 bg-background/95 backdrop-blur-xl supports-[backdrop-filter:blur(20px)]:bg-background/80">
       <div className="flex h-16 items-center gap-4 px-4 sm:px-6 xl:px-8">
         <div className="flex min-w-0 items-center gap-4 lg:gap-6">
-          {/* Logo */}
+          {}
           <div className="flex items-center gap-2">
             <div className="h-8 w-8 rounded-lg bg-gradient-to-r from-primary to-secondary p-1.5">
               <SentimentIQLogo className="h-6 w-6 text-primary-foreground" />
@@ -68,7 +68,7 @@ export default function Navbar() {
             </div>
           </div>
 
-          {/* Global Search */}
+          {}
           <div className="hidden lg:block lg:w-72 xl:w-[26rem]">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -82,7 +82,7 @@ export default function Navbar() {
             </div>
           </div>
 
-          {/* Mobile menu button */}
+          {}
           <button
             type="button"
             onClick={toggleMobileMenu}
@@ -93,9 +93,9 @@ export default function Navbar() {
           </button>
         </div>
 
-        {/* Right side actions */}
+        {}
         <div className="ml-auto flex shrink-0 items-center gap-2 lg:gap-3">
-          {/* Filters badge */}
+          {}
           {activeFilterCount > 0 && (
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
@@ -106,7 +106,7 @@ export default function Navbar() {
             </motion.div>
           )}
 
-          {/* Notifications */}
+          {}
           <div ref={notifRef} className="relative">
             <button
               type="button"
@@ -154,7 +154,7 @@ export default function Navbar() {
             </AnimatePresence>
           </div>
 
-          {/* Theme toggle */}
+          {}
           <button
             type="button"
             onClick={toggleDarkMode}
@@ -164,7 +164,7 @@ export default function Navbar() {
             {darkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
           </button>
 
-          {/* Profile */}
+          {}
           <div ref={profileRef} className="relative">
             <button
               type="button"
@@ -189,7 +189,7 @@ export default function Navbar() {
                   <div className="px-4 py-2 text-sm text-muted-foreground border-b border-border">
                     Admin User
                   </div>
-                  {/* Wire the profile actions so the dropdown does not expose dead buttons. */}
+                  {}
                   <button
                     type="button"
                     onClick={() => {
@@ -230,7 +230,6 @@ export default function Navbar() {
   )
 }
 
-// Simple logo component
 function SentimentIQLogo({ className }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="currentColor">

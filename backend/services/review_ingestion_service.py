@@ -35,8 +35,6 @@ def timer_sync(func):
 
 from db.mongodb import get_mongodb
 from db.postgres import REVIEWS_COLLECTION, INGESTION_BATCHES_COLLECTION
-from db.sql_models import IngestionBatchRecord
-from db.sqlite import SessionLocal
 from db.redis_cache import cache_delete_pattern
 from services.nlp_service import (
     build_recommendation_tags,
@@ -46,7 +44,7 @@ from services.nlp_service import (
     extract_aspects,
     extract_topics,
     get_vader,
-    normalized_hash,
+    normalized_hash_from_cleaned,
 )
 
 
@@ -60,12 +58,23 @@ def _parse_rating(value) -> float | None:
 async def parse_csv_bytes(payload: bytes) -> list[dict]:
     """Parse CSV bytes to list of dicts (async)"""
     def _parse():
-        try:
-            dataframe = pd.read_csv(io.BytesIO(payload), encoding="utf-8", engine="python", skipinitialspace=True)
-        except UnicodeDecodeError:
-            dataframe = pd.read_csv(io.BytesIO(payload), encoding="utf-8-sig", engine="python", skipinitialspace=True)
-        except Exception:
-            dataframe = pd.read_csv(io.BytesIO(payload), encoding="latin1", engine="python", skipinitialspace=True)
+        read_kwargs = {
+            "skipinitialspace": True,
+            "low_memory": False,
+        }
+        for encoding in ("utf-8", "utf-8-sig", "latin1"):
+            try:
+                dataframe = pd.read_csv(io.BytesIO(payload), encoding=encoding, **read_kwargs)
+                break
+            except UnicodeDecodeError:
+                continue
+            except Exception:
+                if encoding == "latin1":
+                    raise
+        else:
+            dataframe = pd.read_csv(io.BytesIO(payload), encoding="latin1", **read_kwargs)
+
+        dataframe.columns = [str(column).strip().lower() for column in dataframe.columns]
         return dataframe.fillna("").to_dict(orient="records")
     return await asyncio.to_thread(_parse)
 
@@ -80,43 +89,57 @@ def parse_json_bytes(payload: bytes) -> list[dict]:
 
 def normalize_review_row(row: dict, source: str) -> dict:
     """Normalize a review row to review data dict - flexible text extraction"""
-    # Support flexible upload schemas without dropping decimals, dates, or optional ids from user files.
-    # Check multiple possible column names for content
-    content_keys = ['content', 'review', 'text', 'comment', 'feedback', 'description', 'message', 'body', 'summary']
+    normalized_row = {str(key).strip().lower(): value for key, value in row.items()}
+
+
+    content_keys = ['content', 'review', 'text', 'comment', 'feedback', 'description', 'message', 'body']
     content = ''
     for key in content_keys:
-        if key in row and row[key]:
-            content = str(row[key]).strip()
+        if key in normalized_row and normalized_row[key]:
+            content = str(normalized_row[key]).strip()
             break
+
+    summary = str(normalized_row.get("summary") or "").strip()
+    if summary and content and summary not in content:
+        content = f"{summary}. {content}"
+    elif summary and not content:
+        content = summary
     
     if not content:
-        # Fallback: join all string values longer than 5 chars
-        all_text = ' '.join([str(v) for v in row.values() if isinstance(v, str) and len(str(v)) > 5])
+
+        all_text = ' '.join([str(v) for v in normalized_row.values() if isinstance(v, str) and len(str(v)) > 5])
         content = all_text[:1000]
     
-    review_date = row.get("review_date")
+    review_date = normalized_row.get("review_date") or normalized_row.get("time") or normalized_row.get("date")
     if review_date:
         try:
-            review_date = pd.to_datetime(review_date).to_pydatetime()
+            if isinstance(review_date, (int, float)) or (isinstance(review_date, str) and str(review_date).isdigit()):
+                review_date = pd.to_datetime(int(float(review_date)), unit="s", utc=True).to_pydatetime()
+            else:
+                review_date = pd.to_datetime(review_date).to_pydatetime()
         except Exception:
             review_date = datetime.utcnow()
     else:
         review_date = datetime.utcnow()
 
-    external_id = row.get("id") or row.get("external_id") or row.get("row")
+    external_id = normalized_row.get("id") or normalized_row.get("external_id") or normalized_row.get("row")
     external_id = str(external_id) if external_id not in ("", None) else None
 
     return {
         "source": source,
-        "author": row.get("author") or row.get("customer") or None,
-        "title": row.get("title") or row.get("subject") or None,
+        "author": normalized_row.get("author") or normalized_row.get("customer") or normalized_row.get("profilename") or None,
+        "title": normalized_row.get("title") or normalized_row.get("subject") or summary or None,
         "content": content or "",
-        "rating": _parse_rating(row.get("rating")),
-        "product": row.get("product") or row.get("product_name") or row.get("item") or None,
-        "category": row.get("category") or None,
+        "rating": _parse_rating(normalized_row.get("rating") or normalized_row.get("score")),
+        "product": normalized_row.get("product") or normalized_row.get("product_name") or normalized_row.get("item") or normalized_row.get("productid") or None,
+        "category": normalized_row.get("category") or None,
         "review_date": review_date,
         "external_id": external_id,
-        "metadata_json": {k: v for k, v in row.items() if k not in ['content', 'review', 'text', 'rating', 'product']},
+        "metadata_json": {
+            k: v
+            for k, v in normalized_row.items()
+            if k not in ['content', 'review', 'text', 'summary', 'rating', 'score', 'product', 'product_name', 'productid']
+        },
     }
 
 
@@ -125,6 +148,7 @@ async def ingest_reviews(
     user_id: str,
     reviews: list[dict],
     source_label: str,
+    batch_metadata: dict | None = None,
 ) -> dict:
     """Ingest reviews into MongoDB"""
     batch_id = str(uuid4())
@@ -148,7 +172,7 @@ async def ingest_reviews(
         cleaned = clean_text(raw_content)
         if not cleaned:
             continue
-        review_hash = normalized_hash(cleaned)
+        review_hash = normalized_hash_from_cleaned(cleaned)
         if review_hash in hashes_in_batch:
             duplicate_count += 1
             continue
@@ -157,7 +181,6 @@ async def ingest_reviews(
         hashes_list.append(review_hash)
     print(f"[TIMING] Preprocessing loop took {time.perf_counter() - start_loop:.2f}s for {len(candidate_data)} candidates")
 
-    # Bulk duplicate check + filter
     if candidate_data:
         existing_hashes = await db[REVIEWS_COLLECTION].distinct("normalized_hash", {"user_id": user_id, "normalized_hash": {"$in": hashes_list}})
         existing_set = set(existing_hashes)
@@ -171,7 +194,6 @@ async def ingest_reviews(
                 duplicate_count += 1
         print(f"[TIMING] Bulk dedupe complete. {duplicate_count} duplicates, {len(filtered_data)} new reviews to process")
 
-        # Batch NLP
         batch_start = time.perf_counter()
         cleaned_texts = [data[1] for data in filtered_data]
         languages = [detect_language(text) for text in cleaned_texts]
@@ -190,6 +212,7 @@ async def ingest_reviews(
         for i, (incoming_review, cleaned) in enumerate(filtered_data):
             review_doc = {
                 "user_id": user_id,
+                "batch_id": batch_id,
                 "source": source_label,
                 "external_id": incoming_review.get("external_id"),
                 "author": incoming_review.get("author"),
@@ -219,33 +242,19 @@ async def ingest_reviews(
         await db[REVIEWS_COLLECTION].insert_many(created_reviews)
 
     created_at = datetime.utcnow()
-    await db[INGESTION_BATCHES_COLLECTION].insert_one(
-        {
-            "batch_id": batch_id,
-            "user_id": user_id,
-            "source": source_label,
-            "created_at": created_at,
-            "created_count": len(created_reviews),
-            "duplicate_count": duplicate_count,
-            "processed_count": processed_count,
-        }
-    )
+    batch_record = {
+        "batch_id": batch_id,
+        "user_id": user_id,
+        "source": source_label,
+        "created_at": created_at,
+        "created_count": len(created_reviews),
+        "duplicate_count": duplicate_count,
+        "processed_count": processed_count,
+        "file_name": batch_metadata.get("file_name") if batch_metadata else None,
+        "metadata_json": batch_metadata.get("metadata_json") if batch_metadata else {},
+    }
+    await db[INGESTION_BATCHES_COLLECTION].insert_one(batch_record)
 
-    with SessionLocal() as session:
-        session.add(
-            IngestionBatchRecord(
-                batch_id=batch_id,
-                user_id=user_id,
-                source=source_label,
-                created_count=len(created_reviews),
-                duplicate_count=duplicate_count,
-                processed_count=processed_count,
-                created_at=created_at,
-            )
-        )
-        session.commit()
-
-    # Clear cache
     await cache_delete_pattern(f"dashboard:{user_id}:")
     await cache_delete_pattern(f"root-cause:{user_id}:")
 

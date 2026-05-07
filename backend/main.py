@@ -6,16 +6,16 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from api.v1 import auth, dashboard, meta, reports, reviews, root_cause, settings as settings_api
 from core.config import settings
+from db.metadata import init_metadata
 from db.mongodb import close_mongodb, init_mongodb
 from db.redis_cache import close_redis, init_redis
-from db.sqlite import init_sqlite
 
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     settings.upload_path.mkdir(parents=True, exist_ok=True)
-    init_sqlite()
     await init_mongodb()
+    await init_metadata()
     await init_redis()
     yield
     await close_mongodb()

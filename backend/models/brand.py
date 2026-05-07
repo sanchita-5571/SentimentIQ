@@ -17,12 +17,10 @@ class Brand(BaseModel):
     industry: Optional[str] = None
     logo_url: Optional[str] = None
 
-    # Settings
     sentiment_threshold: float = 0.05
     anomaly_threshold: float = 0.3
     spam_threshold: float = 0.8
 
-    # Metadata
     is_active: bool = True
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)

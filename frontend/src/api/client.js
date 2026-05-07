@@ -31,7 +31,6 @@ function getErrorMessage(error) {
   return error?.message || 'An unexpected error occurred'
 }
 
-// Add auth token to requests
 api.interceptors.request.use((config) => {
   const { token } = useAuthStore.getState()
   config.headers = config.headers || {}
@@ -68,8 +67,13 @@ export const reviewsApi = {
     api.post('/reviews/upload/json', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     }),
-  manual: (payload) => api.post('/reviews/manual', payload),
+
   get: (reviewId) => api.get(`/reviews/${reviewId}`),
+  batches: (params) => api.get('/reviews/batches', { params }),
+  getBatch: (batchId) => api.get(`/reviews/batches/${batchId}`),
+  updateBatch: (batchId, payload) => api.put(`/reviews/batches/${batchId}`, payload),
+  deleteBatch: (batchId) => api.delete(`/reviews/batches/${batchId}`),
+  rerunBatch: (batchId) => api.post(`/reviews/batches/${batchId}/rerun`),
 }
 
 export const rootCauseApi = {

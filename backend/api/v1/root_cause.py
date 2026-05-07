@@ -1,3 +1,5 @@
+from typing import Optional
+
 from fastapi import APIRouter, Depends, HTTPException
 
 from api.v1.auth import get_current_user
@@ -10,12 +12,13 @@ router = APIRouter(prefix="/root-causes", tags=["root-causes"])
 
 @router.get("", response_model=list[RootCauseEventResponse])
 async def list_root_causes(
+    batch_id: Optional[str] = None,
     current_user=Depends(get_current_user),
 ):
     db = get_mongodb()
     if db is None:
         raise HTTPException(status_code=500, detail="Database not connected")
-    return await get_root_cause_events(current_user.id)
+    return await get_root_cause_events(current_user.id, batch_id)
 
 @router.post("/rebuild")
 async def rebuild_root_cause_events(

@@ -1,5 +1,5 @@
 export default function ReviewTable({ reviews, loading, reviewMeta, onPageChange }) {
-  // Guard date rendering so incomplete records do not crash the table or show Invalid Date.
+
   const formatReviewDate = (value) => {
     if (!value) return 'Undated'
     const parsed = new Date(value)

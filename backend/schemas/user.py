@@ -7,8 +7,6 @@ from typing import Optional
 
 from pydantic import BaseModel, EmailStr, Field
 
-
-# User schemas
 class UserBase(BaseModel):
     """Base user schema"""
     email: EmailStr
@@ -69,8 +67,6 @@ class UserSettingsResponse(BaseModel):
     class Config:
         from_attributes = True
 
-
-# Auth schemas
 class Token(BaseModel):
     """Token schema"""
     access_token: str

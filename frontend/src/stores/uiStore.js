@@ -57,7 +57,6 @@ export const useUIStore = create(
         }
       },
 
-      // Persist real settings values so the settings screen changes the actual app behavior.
       setRefreshInterval: (value) => set({ refreshInterval: Number(value) || defaultPreferences.refreshInterval }),
       setEmailAlerts: (value) => set({ emailAlerts: Boolean(value) }),
       setBrowserAlerts: (value) => set({ browserAlerts: Boolean(value) }),

@@ -1,7 +1,7 @@
 import { NavLink } from 'react-router-dom'
 import { useUIStore } from '../../stores/uiStore'
 import { cn } from '../../lib/utils'
-import { Home, BarChart3, FileText, Settings, AlertTriangle, SearchCheck, FileBarChart2 } from 'lucide-react'
+import { Home, BarChart3, FileText, Settings, AlertTriangle, SearchCheck, FileBarChart2, Clock } from 'lucide-react'
 
 export default function Sidebar() {
   const sidebarOpen = useUIStore((state) => state.sidebarOpen)
@@ -14,6 +14,7 @@ export default function Sidebar() {
     { to: '/reviews-explorer', icon: FileText, label: 'Reviews' },
     { to: '/sentiment-trends', icon: BarChart3, label: 'Trends' },
     { to: '/root-cause-analysis', icon: SearchCheck, label: 'Root Cause' },
+    { to: '/history', icon: Clock, label: 'History' },
     { to: '/reports', icon: FileBarChart2, label: 'Reports' },
     { to: '/alerts', icon: AlertTriangle, label: 'Alerts' },
     { to: '/settings', icon: Settings, label: 'Settings' },
@@ -22,7 +23,7 @@ export default function Sidebar() {
   return (
     <aside className={cn(
       'fixed inset-y-16 left-0 z-30 w-64 border-r border-border bg-background transition-transform duration-200 ease-in-out lg:static lg:inset-auto lg:block lg:h-auto lg:translate-x-0 lg:shrink-0',
-      /* Use the mobile-specific toggle so the hamburger button actually opens the sidebar on small screens. */
+      
       mobileMenuOpen || sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
     )}>
       <div className="h-full overflow-y-auto lg:sticky lg:top-0">
@@ -32,7 +33,7 @@ export default function Sidebar() {
             key={to}
             to={to}
             onClick={() => {
-              // Close the mobile drawer after navigation instead of flipping it back open on desktop clicks.
+
               setMobileMenuOpen(false)
               setSidebarOpen(true)
             }}

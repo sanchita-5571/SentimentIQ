@@ -36,19 +36,19 @@ export default function ExportModal({
 
   return (
     <>
-      {/* Backdrop */}
+      {}
       <div
         className="fixed inset-0 bg-black/50 z-50"
         onClick={onClose}
       />
 
-      {/* Modal */}
+      {}
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div className={clsx(
           'bg-card rounded-lg border border-border shadow-xl max-w-md w-full',
           className
         )}>
-          {/* Header */}
+          {}
           <div className="flex items-center justify-between p-6 border-b border-border">
             <h2 className="text-lg font-semibold">{title}</h2>
             <button
@@ -59,9 +59,9 @@ export default function ExportModal({
             </button>
           </div>
 
-          {/* Content */}
+          {}
           <div className="p-6 space-y-6">
-            {/* Export Format */}
+            {}
             <div>
               <label className="block text-sm font-medium mb-3">Export Format</label>
               <div className="grid grid-cols-2 gap-3">
@@ -92,7 +92,7 @@ export default function ExportModal({
               </div>
             </div>
 
-            {/* Date Range */}
+            {}
             <div>
               <label className="block text-sm font-medium mb-3">Date Range</label>
               <select
@@ -108,7 +108,7 @@ export default function ExportModal({
               </select>
             </div>
 
-            {/* Options */}
+            {}
             <div className="space-y-3">
               <label className="flex items-center gap-3">
                 <input
@@ -132,7 +132,7 @@ export default function ExportModal({
             </div>
           </div>
 
-          {/* Footer */}
+          {}
           <div className="flex justify-end gap-3 p-6 border-t border-border">
             <button
               onClick={onClose}

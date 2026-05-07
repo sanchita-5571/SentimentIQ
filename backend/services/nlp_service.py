@@ -2,20 +2,8 @@ import math
 import re
 from collections import Counter, defaultdict
 from functools import lru_cache
-
-import time
-from functools import wraps
+import unicodedata
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
-
-def timer_sync(func):
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        start = time.perf_counter()
-        result = func(*args, **kwargs)
-        end = time.perf_counter()
-        print(f"[TIMING] {func.__name__} took {end - start:.2f}s")
-        return result
-    return wrapper
 
 from core.config import settings
 
@@ -60,11 +48,24 @@ def get_transformer_pipeline():
         return None
 
 
-@timer_sync
+try:
+    import regex as regex_module
+except ImportError:
+    regex_module = None
+
+
+def _is_unicode_text_char(ch: str) -> bool:
+    category = unicodedata.category(ch)
+    return category[0] in {"L", "M", "N", "P", "S"}
+
+
 def clean_text(text: str) -> str:
     text = re.sub(r"http\S+", " ", text)
-    # Preserve unicode letters so non-English reviews are not stripped to empty text
-    text = re.sub(r"[^\w\s'.,!?-]", " ", text, flags=re.UNICODE)
+
+    if regex_module is not None:
+        text = regex_module.sub(r"[^\p{L}\p{M}\p{N}\p{P}\p{S}\s'.,!?-]", " ", text)
+    else:
+        text = "".join(ch if _is_unicode_text_char(ch) or ch.isspace() else " " for ch in text)
     text = re.sub(r"\s+", " ", text)
     return text.strip()
 
@@ -73,6 +74,13 @@ def normalized_hash(text: str) -> str:
     import hashlib
 
     normalized = re.sub(r"\s+", " ", clean_text(text).lower()).strip()
+    return hashlib.sha256(normalized.encode("utf-8")).hexdigest()
+
+
+def normalized_hash_from_cleaned(cleaned_text: str) -> str:
+    import hashlib
+
+    normalized = re.sub(r"\s+", " ", (cleaned_text or "").lower()).strip()
     return hashlib.sha256(normalized.encode("utf-8")).hexdigest()
 
 
@@ -97,7 +105,6 @@ def _transformer_score(text: str) -> tuple[float, float] | None:
     return score, confidence
 
 
-@timer_sync
 def classify_sentiment(text: str, language: str, vader_score: float | None = None) -> tuple[float, str, float]:
     if vader_score is None:
         vader_score = get_vader().polarity_scores(text)["compound"]
@@ -120,7 +127,6 @@ def classify_sentiment(text: str, language: str, vader_score: float | None = Non
     return round(float(score), 4), label, round(float(min(confidence, 1.0)), 4)
 
 
-@timer_sync
 def extract_aspects(text: str, polarity_score: float | None = None) -> list[dict]:
     lower_text = text.lower()
     aspects = []

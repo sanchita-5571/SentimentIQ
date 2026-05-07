@@ -12,6 +12,7 @@ const ReportsPage = lazy(() => import('./pages/ReportsPage'))
 const AlertsPage = lazy(() => import('./pages/AlertsPage'))
 const SettingsPage = lazy(() => import('./pages/SettingsPage'))
 const SentimentTrendsPage = lazy(() => import('./pages/SentimentTrendsPage'))
+const HistoryPage = lazy(() => import('./pages/HistoryPage'))
 
 export default function App() {
   return (
@@ -19,7 +20,7 @@ export default function App() {
       <Toaster position="top-right" />
       <Routes>
         <Route path="/" element={<Layout />}>
-          {/* Wrap the landing page content only, because route-level suspense now lives in the shared layout. */}
+          {}
           <Route
             index
             element={
@@ -35,6 +36,7 @@ export default function App() {
           <Route path="alerts" element={<AlertsPage />} />
           <Route path="settings" element={<SettingsPage />} />
           <Route path="sentiment-trends" element={<SentimentTrendsPage />} />
+          <Route path="history" element={<HistoryPage />} />
         </Route>
       </Routes>
     </ErrorBoundary>

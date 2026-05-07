@@ -17,7 +17,7 @@ class UserSettings(BaseModel):
     source_excel_enabled: bool = True
     source_json_enabled: bool = True
     source_reddit_enabled: bool = False
-    source_manual_enabled: bool = True
+    source_manual_enabled: bool = False
     email_notifications: bool = True
     anomaly_alerts: bool = True
     daily_digest: bool = False
@@ -28,17 +28,14 @@ class UserSettings(BaseModel):
     updated_at: datetime = Field(default_factory=datetime.utcnow)
     class Config:
         populate_by_name = True
-    
-    # Scheduler settings
+
     scheduler_enabled = Column(Boolean, default=True, nullable=False)
     analysis_interval_minutes = Column(Integer, default=60, nullable=False)
     anomaly_check_interval_minutes = Column(Integer, default=30, nullable=False)
-    
-    # Metadata
+
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
-    
-    # Relationships
+
     user = relationship("User", back_populates="settings")
     
     def __repr__(self):
@@ -51,13 +48,11 @@ class SystemSettings(Base):
     __tablename__ = "system_settings"
     
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    
-    # System config
+
     key = Column(String(100), unique=True, nullable=False, index=True)
     value = Column(Text, nullable=True)
     description = Column(String(500), nullable=True)
-    
-    # Metadata
+
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
     

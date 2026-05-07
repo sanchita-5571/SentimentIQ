@@ -7,8 +7,6 @@ from typing import Optional, List
 
 from pydantic import BaseModel, Field
 
-
-# Event schemas
 class EventBase(BaseModel):
     """Base event schema"""
     event_type: str
@@ -71,8 +69,6 @@ class EventListResponse(BaseModel):
     class Config:
         from_attributes = True
 
-
-# Root Cause schemas
 class RootCauseBase(BaseModel):
     """Base root cause schema"""
     cause_type: str
@@ -136,14 +132,10 @@ class RootCauseListResponse(BaseModel):
     class Config:
         from_attributes = True
 
-
-# Event with Root Causes
 class EventWithRootCauses(EventResponse):
     """Event with root causes"""
     root_causes: Optional[List[RootCauseListResponse]] = None
 
-
-# Event Statistics
 class EventStats(BaseModel):
     """Event statistics"""
     total_events: int

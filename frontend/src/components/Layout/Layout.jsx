@@ -17,7 +17,7 @@ export default function Layout() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      {/* Background gradient */}
+      {}
       <div className="fixed inset-0 pointer-events-none bg-gradient-to-br from-primary/5 via-background to-muted/20" />
 
       <div className="relative flex min-h-screen flex-col">
@@ -35,7 +35,7 @@ export default function Layout() {
               transition={{ duration: 0.3 }}
               className="relative flex-1 overflow-y-auto p-4 sm:p-6 xl:p-8"
             >
-              {/* Keep all lazy route transitions stable by resolving them through a shared suspense boundary. */}
+              {}
               <Suspense
                 fallback={
                   <div className="mx-auto flex max-w-7xl flex-col gap-6">
@@ -54,7 +54,7 @@ export default function Layout() {
             <div className="sticky top-0 p-6">
               <h3 className="mb-4 text-lg font-semibold">Recent Activity</h3>
               <div className="space-y-3 text-sm">
-                {/* Replace the placeholder activity rail so the desktop sidebar reflects live alert data. */}
+                {}
                 {recentActivity.length ? (
                   recentActivity.map((alert) => (
                     <div key={alert.id} className="flex items-center gap-3 rounded-xl bg-muted p-3 hover:bg-accent">
@@ -80,7 +80,7 @@ export default function Layout() {
         </div>
       </div>
 
-      {/* Mobile menu overlay handler */}
+      {}
       {mobileMenuOpen && (
         <div 
           className="fixed inset-0 z-40 lg:hidden"

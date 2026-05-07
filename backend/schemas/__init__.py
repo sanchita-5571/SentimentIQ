@@ -11,7 +11,6 @@ from schemas.report import ReportExportRequest
 from schemas.review import (
     AspectSentiment,
     IngestionResponse,
-    ManualReviewBatch,
     ReviewCreate,
     ReviewFilters,
     ReviewListResponse,
@@ -26,7 +25,6 @@ __all__ = [
     "FilterOptions",
     "IngestionResponse",
     "LoginRequest",
-    "ManualReviewBatch",
     "OverviewMetrics",
     "ReportExportRequest",
     "ReviewCreate",

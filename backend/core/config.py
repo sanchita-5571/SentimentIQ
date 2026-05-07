@@ -10,7 +10,6 @@ class Settings(BaseSettings):
     SECRET_KEY: str = "change-me-for-local-dev"
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24
-    DATABASE_URL: str = "sqlite:///./sentimentiq.db"
 
     MONGODB_URL: str = "mongodb://localhost:27017"
     MONGODB_NAME: str = "sentimentiq"

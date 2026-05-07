@@ -2,23 +2,18 @@ import asyncio
 import json
 
 from core.config import settings
+from core.security import hash_password
+from db.metadata import ensure_demo_user
 from db.mongodb import init_mongodb
 from db.redis_cache import init_redis
-from db.sqlite import SessionLocal, init_sqlite
-from db.sql_models import UserRecord
 from services.review_ingestion_service import ingest_reviews, normalize_review_row, parse_csv_bytes
 
 
 async def run_seed() -> None:
-    init_sqlite()
     await init_mongodb()
     await init_redis()
 
-    with SessionLocal() as session:
-        analyst = session.query(UserRecord).filter(UserRecord.email == settings.DEMO_USER_EMAIL).first()
-        if analyst is None:
-            raise RuntimeError("Demo analyst user was not created")
-        user_id = analyst.id
+    user_id = await ensure_demo_user()
 
     sample_csv = (settings.backend_dir / settings.DEFAULT_SAMPLE_CSV).resolve()
     sample_json = (settings.backend_dir / settings.DEFAULT_SAMPLE_JSON).resolve()

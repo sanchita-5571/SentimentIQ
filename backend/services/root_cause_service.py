@@ -55,23 +55,27 @@ def _recommendations_for_aspect(aspect: Optional[str]) -> List[dict]:
     )
 
 
-async def rebuild_root_causes(user_id: str) -> List[dict]:
-    """Rebuild root cause events for a user"""
+async def rebuild_root_causes(user_id: str, batch_id: Optional[str] = None) -> List[dict]:
+    """Rebuild root cause events for a user or batch"""
     db = get_mongodb()
     if db is None:
         return []
 
-    # Get all reviews for user
-    cursor = db[REVIEWS_COLLECTION].find({"user_id": user_id}).sort("review_date", 1)
+    query = {"user_id": user_id}
+    if batch_id:
+        query["batch_id"] = batch_id
+
+    cursor = db[REVIEWS_COLLECTION].find(query).sort("review_date", 1)
     reviews = await cursor.to_list(length=10000)
 
     if len(reviews) < 6:
         return []
 
-    # Delete existing root cause events
-    await db[EVENTS_COLLECTION].delete_many({"user_id": user_id, "type": "root_cause"})
+    delete_query = {"user_id": user_id, "type": "root_cause"}
+    if batch_id:
+        delete_query["batch_id"] = batch_id
+    await db[EVENTS_COLLECTION].delete_many(delete_query)
 
-    # Group reviews by day
     daily = {}
     for review in reviews:
         review_date = review.get("review_date")
@@ -110,7 +114,6 @@ async def rebuild_root_causes(user_id: str) -> List[dict]:
         earliest_aspect = degrading[0][0] if degrading else None
         amplification_chain = [item[0] for item in degrading if item[1] <= settings.ASPECT_DROP_THRESHOLD][:3]
 
-        # Get evidence (most negative reviews)
         evidence = []
         for review in sorted(current_reviews, key=lambda r: r.get("sentiment_score", 0))[:5]:
             evidence.append({
@@ -122,7 +125,7 @@ async def rebuild_root_causes(user_id: str) -> List[dict]:
 
         event_doc = {
             "user_id": user_id,
-            "type": "root_cause",
+            "batch_id": batch_id,
             "event_date": day,
             "baseline_sentiment": round(baseline_sentiment, 4),
             "current_sentiment": round(current_sentiment, 4),
@@ -139,15 +142,14 @@ async def rebuild_root_causes(user_id: str) -> List[dict]:
         event_doc["_id"] = str(result.inserted_id)
         events.append(event_doc)
 
-    # Clear cache
     await cache_delete_pattern(f"root-cause:{user_id}:")
 
     return events
 
 
-async def get_root_cause_events(user_id: str) -> List[dict]:
-    """Get root cause events for a user"""
-    cache_key = f"root-cause:{user_id}:events"
+async def get_root_cause_events(user_id: str, batch_id: Optional[str] = None) -> List[dict]:
+    """Get root cause events for a user or batch"""
+    cache_key = f"root-cause:{user_id}:{batch_id or 'all'}:events"
 
     cached = await cache_get(cache_key)
     if cached is not None:
@@ -158,6 +160,8 @@ async def get_root_cause_events(user_id: str) -> List[dict]:
         return []
 
     query = {"user_id": user_id, "type": "root_cause"}
+    if batch_id:
+        query["batch_id"] = batch_id
     cursor = db[EVENTS_COLLECTION].find(query).sort("event_date", -1)
     events = await cursor.to_list(length=100)
 
@@ -167,7 +171,7 @@ async def get_root_cause_events(user_id: str) -> List[dict]:
     serialized = [
         {
             "id": str(event.get("_id")),
-            "event_date": event.get("event_date").isoformat() if event.get("event_date") else None,
+            "event_date": (event.get("event_date") or event.get("created_at")).isoformat() if (event.get("event_date") or event.get("created_at")) else None,
             "baseline_sentiment": event.get("baseline_sentiment"),
             "current_sentiment": event.get("current_sentiment"),
             "sentiment_delta": event.get("sentiment_delta"),

@@ -7,8 +7,6 @@ from typing import Optional, List
 
 from pydantic import BaseModel, Field
 
-
-# Sentiment Result schemas
 class SentimentResultBase(BaseModel):
     """Base sentiment result schema"""
     review_id: int
@@ -44,8 +42,6 @@ class SentimentResultResponse(SentimentResultBase):
     class Config:
         from_attributes = True
 
-
-# Sentiment Analysis schemas
 class SentimentAnalysisRequest(BaseModel):
     """Sentiment analysis request schema"""
     text: str
@@ -64,8 +60,6 @@ class SentimentAnalysisResponse(BaseModel):
     emotions: Optional[List[dict]] = None
     topics: Optional[List[str]] = None
 
-
-# Bulk Sentiment Analysis
 class BulkSentimentRequest(BaseModel):
     """Bulk sentiment analysis request"""
     review_ids: List[int]
@@ -77,8 +71,6 @@ class BulkSentimentResponse(BaseModel):
     failed_count: int
     results: List[SentimentAnalysisResponse]
 
-
-# Sentiment Timeline
 class SentimentTimelinePoint(BaseModel):
     """Sentiment timeline point"""
     date: datetime
@@ -97,8 +89,6 @@ class SentimentTimelineRequest(BaseModel):
     category: Optional[str] = None
     product_name: Optional[str] = None
 
-
-# Sentiment Statistics
 class SentimentStats(BaseModel):
     """Sentiment statistics"""
     total_reviews: int

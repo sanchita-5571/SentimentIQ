@@ -12,35 +12,29 @@ class Anomaly(BaseModel):
     
     id: Optional[str] = Field(default=None, alias="_id")
     user_id: str
-    
-    # Anomaly details
+
     anomaly_type: str  # sentiment_drop, volume_spike, etc.
     severity: str  # low, medium, high, critical
     title: str
     description: Optional[str] = None
-    
-    # Detection metrics
+
     baseline_score: Optional[float] = None  # Historical average
     current_score: Optional[float] = None  # Current value
     deviation: Optional[float] = None  # Difference from baseline
     deviation_percentage: Optional[float] = None
-    
-    # Time window
+
     start_date: datetime
     end_date: Optional[datetime] = None
     duration_minutes: Optional[int] = None
-    
-    # Affected items
+
     affected_reviews: Optional[int] = None  # Count of affected reviews
     affected_products: Optional[str] = None  # JSON list of affected products
     affected_categories: Optional[str] = None  # JSON list of affected categories
-    
-    # Status
+
     status: str = "detected"  # detected, investigating, resolved, dismissed
     resolved_at: Optional[datetime] = None
     resolution_notes: Optional[str] = None
-    
-    # Metadata
+
     detected_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
@@ -54,8 +48,7 @@ class AnomalyTrigger(BaseModel):
     id: Optional[str] = Field(default=None, alias="_id")
     anomaly_id: str
     review_id: str
-    
-    # Trigger details
+
     trigger_type: str  # low_rating, negative_sentiment, etc.
     contribution_score: Optional[float] = None  # How much this review contributed
     

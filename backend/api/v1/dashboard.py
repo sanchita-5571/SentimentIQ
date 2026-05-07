@@ -25,6 +25,7 @@ async def dashboard_snapshot(
     language: Optional[str] = None,
     start_date: Optional[datetime] = None,
     end_date: Optional[datetime] = None,
+    batch_id: Optional[str] = None,
     current_user=Depends(get_current_user),
 ) -> dict:
     """Get dashboard snapshot with filters using MongoDB"""
@@ -41,6 +42,7 @@ async def dashboard_snapshot(
         "language": language,
         "start_date": start_date,
         "end_date": end_date,
+        "batch_id": batch_id,
     }
 
     return await get_dashboard_snapshot(current_user.id, filters)

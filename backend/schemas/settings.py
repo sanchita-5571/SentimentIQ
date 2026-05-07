@@ -7,8 +7,6 @@ from typing import Optional
 
 from pydantic import BaseModel, Field
 
-
-# User Settings schemas
 class UserSettingsBase(BaseModel):
     """Base user settings schema"""
     sentiment_threshold_positive: float = 0.05
@@ -29,7 +27,7 @@ class UserSettingsUpdate(UserSettingsBase):
     source_excel_enabled: Optional[bool] = None
     source_json_enabled: Optional[bool] = None
     source_reddit_enabled: Optional[bool] = None
-    source_manual_enabled: Optional[bool] = None
+
     email_notifications: Optional[bool] = None
     anomaly_alerts: Optional[bool] = None
     daily_digest: Optional[bool] = None
@@ -56,7 +54,7 @@ class UserSettingsResponse(BaseModel):
     source_excel_enabled: bool
     source_json_enabled: bool
     source_reddit_enabled: bool
-    source_manual_enabled: bool
+
     email_notifications: bool
     anomaly_alerts: bool
     daily_digest: bool
@@ -70,8 +68,6 @@ class UserSettingsResponse(BaseModel):
     class Config:
         from_attributes = True
 
-
-# System Settings schemas
 class SystemSettingsBase(BaseModel):
     """Base system settings schema"""
     key: str
@@ -99,8 +95,6 @@ class SystemSettingsResponse(SystemSettingsBase):
     class Config:
         from_attributes = True
 
-
-# Dashboard Settings
 class DashboardSettings(BaseModel):
     """Dashboard settings schema"""
     theme: str = "light"
@@ -109,8 +103,6 @@ class DashboardSettings(BaseModel):
     default_date_range: str = "7d"  # 24h, 7d, 30d, 90d, custom
     chart_type: str = "line"  # line, bar, area
 
-
-# Alert Settings
 class AlertSettings(BaseModel):
     """Alert settings schema"""
     enabled: bool = True
@@ -119,8 +111,6 @@ class AlertSettings(BaseModel):
     daily_digest: bool = False
     alert_channels: list = ["email"]  # email, push, webhook
 
-
-# Account Settings
 class AccountSettings(BaseModel):
     """Account settings schema"""
     email: str

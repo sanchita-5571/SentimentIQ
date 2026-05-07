@@ -44,7 +44,6 @@ class ReviewService:
         if db is None:
             raise RuntimeError("MongoDB not connected")
 
-        # Calculate word count and char count
         content = review_data.get("content", "")
         word_count = len(content.split())
         char_count = len(content)

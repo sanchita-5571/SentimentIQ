@@ -29,30 +29,26 @@ class AnomalyDetector:
             return []
         
         anomalies = []
-        
-        # Group reviews by time window
+
         reviews_by_window = self._group_by_time_window(reviews, window_hours)
         
         for window_start, window_reviews in reviews_by_window.items():
             if len(window_reviews) < min_reviews:
                 continue
-            
-            # Calculate window sentiment
+
             scores = [r.get("sentiment_score", 0) for r in window_reviews]
             avg_score = np.mean(scores)
-            
-            # Check if baseline exists
+
             if self.baseline_sentiment is None:
                 self.baseline_sentiment = avg_score
                 self.baseline_std = np.std(scores) or 0.1
                 continue
-            
-            # Detect deviation
+
             deviation = self.baseline_sentiment - avg_score
             deviation_pct = (deviation / abs(self.baseline_sentiment)) if self.baseline_sentiment != 0 else 0
             
             if abs(deviation) > self.threshold * abs(self.baseline_sentiment) or deviation_pct > self.threshold:
-                # Determine severity
+
                 severity = "low"
                 if abs(deviation) > self.threshold * 2 * abs(self.baseline_sentiment):
                     severity = "critical"
@@ -60,8 +56,7 @@ class AnomalyDetector:
                     severity = "high"
                 elif abs(deviation) > self.threshold * abs(self.baseline_sentiment):
                     severity = "medium"
-                
-                # Create anomaly record
+
                 anomaly = {
                     "anomaly_type": "sentiment_drop" if deviation > 0 else "sentiment_spike",
                     "severity": severity,
@@ -95,12 +90,11 @@ class AnomalyDetector:
             
             if isinstance(created_at, str):
                 created_at = datetime.fromisoformat(created_at.replace("Z", "+00:00"))
-            
-            # Round to window
+
             window_start = created_at.replace(
                 minute=0, second=0, microsecond=0
             )
-            # Align to window boundaries
+
             window_start = window_start - timedelta(
                 minutes=window_start.minute % (window_hours * 60)
             )
@@ -121,8 +115,7 @@ class AnomalyDetector:
         
         if not reviews:
             return root_causes
-        
-        # Analyze negative reviews for common themes
+
         negative_reviews = [
             r for r in reviews 
             if r.get("sentiment_label") == "negative"
@@ -130,8 +123,7 @@ class AnomalyDetector:
         
         if not negative_reviews:
             return root_causes
-        
-        # Simple keyword-based root cause detection
+
         cause_keywords = {
             "product_quality": ["quality", "broken", "defective", "damaged", "cheap"],
             "shipping": ["shipping", "delivery", "late", "lost", "arrived"],
@@ -139,8 +131,7 @@ class AnomalyDetector:
             "price": ["price", "expensive", "cheap", "value", "overpriced"],
             "product_issues": ["doesn't work", "not working", "broken", "failed"],
         }
-        
-        # Count occurrences
+
         cause_scores = {cause: 0 for cause in cause_keywords}
         
         for review in negative_reviews:
@@ -149,8 +140,7 @@ class AnomalyDetector:
                 for keyword in keywords:
                     if keyword in content:
                         cause_scores[cause] += 1
-        
-        # Create root causes for significant matches
+
         min_count = max(1, len(negative_reviews) * 0.1)
         
         for cause, count in cause_scores.items():
@@ -192,14 +182,12 @@ class RootCauseAnalyzer:
         
         if not reviews:
             return root_causes
-        
-        # Get negative reviews in anomaly window
+
         negative = [r for r in reviews if r.get("sentiment_label") == "negative"]
         
         if not negative:
             return root_causes
-        
-        # Analyze each category
+
         for category, keywords in self.cause_categories.items():
             matching = []
             for review in negative:

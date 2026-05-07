@@ -2,10 +2,8 @@ from datetime import datetime, timedelta
 from typing import Optional
 
 from db.mongodb import get_mongodb
-from db.postgres import REVIEWS_COLLECTION
+from db.postgres import REVIEWS_COLLECTION, INGESTION_BATCHES_COLLECTION
 from db.redis_cache import cache_get, cache_set
-from db.sql_models import IngestionBatchRecord
-from db.sqlite import SessionLocal
 import time
 from functools import wraps
 
@@ -42,10 +40,11 @@ def build_filter_query(
     language: Optional[str] = None,
     start_date: Optional[datetime] = None,
     end_date: Optional[datetime] = None,
+    batch_id: Optional[str] = None,
 ) -> dict:
     query = {"user_id": user_id}
     normalized_end_date = end_date
-    # Expand date-only end filters so dashboard snapshots match the full selected day.
+
     if normalized_end_date and normalized_end_date.time() == datetime.min.time():
         normalized_end_date = normalized_end_date + timedelta(days=1) - timedelta(microseconds=1)
 
@@ -72,6 +71,8 @@ def build_filter_query(
             query["review_date"]["$gte"] = start_date
         if normalized_end_date:
             query["review_date"]["$lte"] = normalized_end_date
+    if batch_id:
+        query["batch_id"] = batch_id
     return query
 
 
@@ -115,6 +116,7 @@ async def get_dashboard_snapshot(
         search=filters.get("search") or "all",
         start=filters.get("start_date") or "all",
         end=filters.get("end_date") or "all",
+        batch_id=filters.get("batch_id") or "all",
     )
 
     cached = await cache_get(cache_key)
@@ -181,13 +183,12 @@ async def get_dashboard_snapshot(
     distinct_categories = sorted({review.get("category") for review in reviews if review.get("category")})
     distinct_languages = sorted({review.get("language") for review in reviews if review.get("language")})
 
-    with SessionLocal() as session:
-        duplicates_removed = (
-            session.query(IngestionBatchRecord)
-            .filter(IngestionBatchRecord.user_id == user_id)
-            .with_entities(IngestionBatchRecord.duplicate_count)
-            .all()
-        )
+    pipeline = [
+        {"$match": {"user_id": user_id}},
+        {"$group": {"_id": None, "total": {"$sum": "$duplicate_count"}}}
+    ]
+    agg_result = await db[INGESTION_BATCHES_COLLECTION].aggregate(pipeline).to_list(length=1)
+    duplicates_removed = agg_result[0]["total"] if agg_result else 0
 
     snapshot = {
         "overview": {
@@ -196,7 +197,7 @@ async def get_dashboard_snapshot(
             "negative_ratio": negative_ratio,
             "average_rating": average_rating,
             "active_topics": len(topics),
-            "duplicates_removed": sum(item[0] for item in duplicates_removed),
+            "duplicates_removed": duplicates_removed,
         },
         "timeline": timeline,
         "aspect_trends": aspect_trends or [

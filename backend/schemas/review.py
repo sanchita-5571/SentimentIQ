@@ -12,7 +12,7 @@ class AspectSentiment(BaseModel):
 
 
 class ReviewCreate(BaseModel):
-    source: str = "manual"
+    source: str = "csv"
     author: str | None = None
     title: str | None = None
     content: str
@@ -69,8 +69,7 @@ class ReviewListResponse(BaseModel):
     page_size: int
 
 
-class ManualReviewBatch(BaseModel):
-    reviews: list[ReviewCreate]
+
 
 
 class IngestionResponse(BaseModel):

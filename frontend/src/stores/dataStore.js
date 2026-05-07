@@ -36,6 +36,11 @@ export const useDataStore = create((set, get) => ({
     export: false,
   },
   error: null,
+  currentBatchId: null,
+  currentBatch: null,
+  history: [],
+  historyLoading: false,
+  historyError: null,
   fetchSnapshot: async (filters) => {
     set((state) => ({ loading: { ...state.loading, snapshot: true }, error: null }))
     try {
@@ -83,14 +88,20 @@ export const useDataStore = create((set, get) => ({
   uploadCsv: async (file, filters) => {
     const formData = new FormData()
     formData.append('file', file)
-    set((state) => ({ loading: { ...state.loading, ingest: true } }))
+    set((state) => ({ loading: { ...state.loading, ingest: true }, error: null }))
     try {
       const response = await reviewsApi.uploadCsv(formData)
       toast.success(`Imported ${response.data.created_count} reviews, skipped ${response.data.duplicate_count} duplicates`)
-      set((state) => ({ loading: { ...state.loading, ingest: false } }))
-      await get().fetchSnapshot(filters)
-      await get().fetchReviews(filters)
-      await get().fetchRootCauses()
+      set((state) => ({ 
+        loading: { ...state.loading, ingest: false },
+        currentBatchId: response.data.batch_id,
+      }))
+      await Promise.all([
+        get().fetchSnapshot(filters),
+        get().fetchReviews(filters),
+        get().fetchRootCauses(),
+        get().fetchBatches(),
+      ])
     } catch (error) {
       set((state) => ({ loading: { ...state.loading, ingest: false } }))
       toast.error(getErrorMessage(error) || 'CSV upload failed')
@@ -99,33 +110,26 @@ export const useDataStore = create((set, get) => ({
   uploadJson: async (file, filters) => {
     const formData = new FormData()
     formData.append('file', file)
-    set((state) => ({ loading: { ...state.loading, ingest: true } }))
+    set((state) => ({ loading: { ...state.loading, ingest: true }, error: null }))
     try {
       const response = await reviewsApi.uploadJson(formData)
       toast.success(`Imported ${response.data.created_count} reviews, skipped ${response.data.duplicate_count} duplicates`)
-      set((state) => ({ loading: { ...state.loading, ingest: false } }))
-      await get().fetchSnapshot(filters)
-      await get().fetchReviews(filters)
-      await get().fetchRootCauses()
+      set((state) => ({ 
+        loading: { ...state.loading, ingest: false },
+        currentBatchId: response.data.batch_id,
+      }))
+      await Promise.all([
+        get().fetchSnapshot(filters),
+        get().fetchReviews(filters),
+        get().fetchRootCauses(),
+        get().fetchBatches(),
+      ])
     } catch (error) {
       set((state) => ({ loading: { ...state.loading, ingest: false } }))
       toast.error(getErrorMessage(error) || 'JSON upload failed')
     }
   },
-  submitManual: async (payload, filters) => {
-    set((state) => ({ loading: { ...state.loading, ingest: true } }))
-    try {
-      const response = await reviewsApi.manual({ reviews: payload })
-      toast.success(`Processed ${response.data.processed_count} manual reviews`)
-      set((state) => ({ loading: { ...state.loading, ingest: false } }))
-      await get().fetchSnapshot(filters)
-      await get().fetchReviews(filters)
-      await get().fetchRootCauses()
-    } catch (error) {
-      set((state) => ({ loading: { ...state.loading, ingest: false } }))
-      toast.error(getErrorMessage(error) || 'Manual ingestion failed')
-    }
-  },
+
   rebuildRootCauses: async () => {
     try {
       const response = await rootCauseApi.rebuild()
@@ -153,6 +157,42 @@ export const useDataStore = create((set, get) => ({
       toast.error(getErrorMessage(error) || 'Export failed')
     } finally {
       set((state) => ({ loading: { ...state.loading, export: false } }))
+    }
+  },
+  fetchBatches: async (search) => {
+    set((state) => ({ historyLoading: true, historyError: null }))
+    try {
+      const response = await reviewsApi.batches({ search })
+      set((state) => ({ 
+        history: response.data || [],
+        historyLoading: false,
+      }))
+    } catch (error) {
+      set((state) => ({
+        historyLoading: false,
+        historyError: getErrorMessage(error) || 'Failed to load batch history',
+      }))
+    }
+  },
+  selectBatch: (batchId) => {
+    set({ currentBatchId: batchId })
+  },
+  deleteBatch: async (batchId) => {
+    try {
+      await reviewsApi.deleteBatch(batchId)
+      toast.success('Batch deleted')
+      await get().fetchBatches()
+    } catch (error) {
+      toast.error(getErrorMessage(error) || 'Failed to delete batch')
+    }
+  },
+  rerunBatch: async (batchId) => {
+    try {
+      await reviewsApi.rerunBatch(batchId)
+      toast.success('Batch rerun completed')
+      await get().fetchBatches()
+    } catch (error) {
+      toast.error(getErrorMessage(error) || 'Failed to rerun batch')
     }
   },
 }))

@@ -28,7 +28,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     fetchSnapshot(filters)
-    // Respect the saved refresh preference so the settings page changes live dashboard polling.
+
     const safeInterval = Math.max(Number(refreshInterval) || 15, 5) * 1000
     const interval = window.setInterval(() => fetchSnapshot(filters), safeInterval)
     return () => window.clearInterval(interval)
@@ -60,7 +60,6 @@ export default function DashboardPage() {
     [snapshot],
   )
 
-  // Let dashboard alert actions dismiss cards locally instead of rendering non-functional buttons.
   const visibleAlerts = useMemo(
     () => alerts.filter((alert) => !dismissedAlertIds.includes(alert.id)),
     [alerts, dismissedAlertIds],

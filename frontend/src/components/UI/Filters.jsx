@@ -50,16 +50,16 @@ export default function Filters({
 
       {isOpen && (
         <>
-          {/* Backdrop */}
+          {}
           <div
             className="fixed inset-0 z-10"
             onClick={() => setIsOpen(false)}
           />
 
-          {/* Dropdown */}
+          {}
           <div className="absolute top-full left-0 mt-2 w-80 bg-card border border-border rounded-lg shadow-lg z-20 p-4">
             <div className="space-y-4">
-              {/* Date Range */}
+              {}
               <div>
                 <label className="block text-sm font-medium mb-2">Date Range</label>
                 <div className="flex gap-2">
@@ -78,7 +78,7 @@ export default function Filters({
                 </div>
               </div>
 
-              {/* Source Filter */}
+              {}
               <div>
                 <label className="block text-sm font-medium mb-2">Source</label>
                 <select
@@ -89,12 +89,11 @@ export default function Filters({
                   <option value="">All Sources</option>
                   <option value="csv">CSV</option>
                   <option value="excel">Excel</option>
-                  <option value="manual">Manual</option>
                   <option value="reddit">Reddit</option>
                 </select>
               </div>
 
-              {/* Sentiment Filter */}
+              {}
               <div>
                 <label className="block text-sm font-medium mb-2">Sentiment</label>
                 <select
@@ -109,7 +108,7 @@ export default function Filters({
                 </select>
               </div>
 
-              {/* Rating Filter */}
+              {}
               <div>
                 <label className="block text-sm font-medium mb-2">Rating</label>
                 <select
@@ -126,7 +125,7 @@ export default function Filters({
                 </select>
               </div>
 
-              {/* Actions */}
+              {}
               <div className="flex justify-between pt-4 border-t border-border">
                 <button
                   onClick={clearAllFilters}
@@ -146,7 +145,7 @@ export default function Filters({
         </>
       )}
 
-      {/* Active filters display */}
+      {}
       {activeFiltersCount > 0 && (
         <div className="flex flex-wrap gap-2 mt-2">
           {Object.entries(filters).map(([key, value]) => (

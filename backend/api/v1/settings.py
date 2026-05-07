@@ -27,7 +27,7 @@ async def get_settings(
     doc = await db[SETTINGS_COLLECTION].find_one({"user_id": current_user.id, "type": "user"})
 
     if not doc:
-        # Create default settings
+
         settings_doc = {
             "user_id": current_user.id,
             "type": "user",

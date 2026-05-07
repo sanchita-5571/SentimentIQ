@@ -19,12 +19,8 @@ async def get_db_session() -> AsyncIOMotorDatabase:
         raise RuntimeError("MongoDB is not connected. Please ensure MongoDB is running.")
     return db
 
-
-# Alias for backward compatibility - this is MongoDB, not PostgreSQL!
 db_session = get_db_session
 
-
-# Collection names
 USERS_COLLECTION = "users"
 REVIEWS_COLLECTION = "reviews"
 EVENTS_COLLECTION = "events"

@@ -7,8 +7,6 @@ from typing import Optional, List
 
 from pydantic import BaseModel, Field
 
-
-# Anomaly schemas
 class AnomalyBase(BaseModel):
     """Base anomaly schema"""
     anomaly_type: str
@@ -76,8 +74,6 @@ class AnomalyListResponse(BaseModel):
     class Config:
         from_attributes = True
 
-
-# Anomaly Trigger schemas
 class AnomalyTriggerBase(BaseModel):
     """Base anomaly trigger schema"""
     anomaly_id: int
@@ -99,8 +95,6 @@ class AnomalyTriggerResponse(AnomalyTriggerBase):
     class Config:
         from_attributes = True
 
-
-# Anomaly Statistics
 class AnomalyStats(BaseModel):
     """Anomaly statistics"""
     total_anomalies: int
@@ -113,8 +107,6 @@ class AnomalyStats(BaseModel):
     avg_resolution_time_hours: Optional[float]
     top_issues: List[dict]
 
-
-# Anomaly Filter
 class AnomalyFilter(BaseModel):
     """Anomaly filter schema"""
     anomaly_type: Optional[str] = None

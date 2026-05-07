@@ -25,7 +25,7 @@ export default function SettingsPage() {
   }
 
   useEffect(() => {
-    // Hydrate saved settings from the backend so the settings page reflects the actual persisted project state.
+
     const loadSettings = async () => {
       try {
         const response = await settingsApi.get()

@@ -34,7 +34,6 @@ from db.mongo_ops import (
     count_documents,
 )
 
-# Re-export for backward compatibility
 __all__ = [
     "USERS_COLLECTION",
     "REVIEWS_COLLECTION",

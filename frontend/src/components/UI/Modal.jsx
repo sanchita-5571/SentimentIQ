@@ -43,7 +43,7 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }) {
         'w-full bg-card rounded-lg shadow-xl animate-slide-in',
         sizes[size]
       )}>
-        {/* Header */}
+        {}
         <div className="flex items-center justify-between p-4 border-b border-border">
           <h2 className="text-lg font-semibold">{title}</h2>
           <button 
@@ -54,7 +54,7 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }) {
           </button>
         </div>
         
-        {/* Content */}
+        {}
         <div className="p-4">
           {children}
         </div>
